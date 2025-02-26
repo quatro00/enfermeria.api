@@ -1,0 +1,6 @@
+@enfermeria.api_HostAddress = http://localhost:5063
+
+GET {{enfermeria.api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
