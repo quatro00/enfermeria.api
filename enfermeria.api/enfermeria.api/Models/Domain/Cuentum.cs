@@ -19,6 +19,8 @@ public partial class Cuentum
 
     public Guid? ProveedorId { get; set; }
 
+    public Guid? TipoEnfermeraId { get; set; }
+
     public bool Activo { get; set; }
 
     public DateTime FechaCreacion { get; set; }
@@ -28,4 +30,6 @@ public partial class Cuentum
     public DateTime? FechaModificacion { get; set; }
 
     public Guid? UsuarioModificacionId { get; set; }
+
+    public virtual CatTipoEnfermera? TipoEnfermera { get; set; }
 }

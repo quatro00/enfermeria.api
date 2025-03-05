@@ -31,6 +31,7 @@ builder.Services.AddDbContext<AuthDbContext>(options =>
 
 builder.Services.AddScoped<ITokenRepository, TokenRepository>();
 builder.Services.AddScoped<IAspNetUsersRepository, AspNetUsersRepository>();
+builder.Services.AddScoped<IEstadoRepository, EstadoRepository>();
 
 
 builder.Services.AddIdentityCore<IdentityUser>()
