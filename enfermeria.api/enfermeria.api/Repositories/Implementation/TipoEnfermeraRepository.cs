@@ -2,19 +2,20 @@
 using enfermeria.api.Models;
 using enfermeria.api.Models.Domain;
 using enfermeria.api.Models.DTO.Estado;
+using enfermeria.api.Models.DTO.TipoEnfermera;
 using enfermeria.api.Repositories.Interface;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace enfermeria.api.Repositories.Implementation
 {
-    public class EstadoRepository : IEstadoRepository
+    public class TipoEnfermeraRepository : ITipoEnfermeraRepository
     {
         private readonly DbAb1c8aEnfermeriaContext context;
         private readonly IConfiguration configuration;
         private readonly UserManager<IdentityUser> userManager;
 
-        public EstadoRepository(DbAb1c8aEnfermeriaContext context, IConfiguration configuration, UserManager<IdentityUser> userManager)
+        public TipoEnfermeraRepository(DbAb1c8aEnfermeriaContext context, IConfiguration configuration, UserManager<IdentityUser> userManager)
         {
             this.context = context;
             this.configuration = configuration;
@@ -26,7 +27,7 @@ namespace enfermeria.api.Repositories.Implementation
             ResponseModel rm = new ResponseModel();
             try
             {
-                var results = await this.context.CatEstados.Where(x => x.Id == id).ExecuteUpdateAsync(
+                var results = await this.context.CatTipoEnfermeras.Where(x => x.TipoEnfermeraId == id).ExecuteUpdateAsync(
                    s => s
                     .SetProperty(t => t.Activo, t => true)
                 );
@@ -44,20 +45,22 @@ namespace enfermeria.api.Repositories.Implementation
             return rm;
         }
 
-        public async Task<ResponseModel> Create(CreateEstado_Request model, string usuarioId)
+        public async Task<ResponseModel> Create(CreateTipoEnfermera_Request model, string usuarioId)
         {
             ResponseModel rm = new ResponseModel();
             try
             {
-                CatEstado estado = new CatEstado()
+                CatTipoEnfermera tipoEnfermera = new CatTipoEnfermera()
                 {
-                    Id = Guid.NewGuid(),
-                    Nombre = model.nombre.ToUpper(),
-                    NombreCorto = model.nombreCorto.ToUpper(),
+                    TipoEnfermeraId = Guid.NewGuid(),
+                    No = model.no,
+                    Descripcion = model.descripcion.ToUpper(),
+                    Valor = model.valor,
+                    CostoHora = model.costoHora,
                     Activo = false,
                 };
 
-                await this.context.CatEstados.AddAsync(estado);
+                await this.context.CatTipoEnfermeras.AddAsync(tipoEnfermera);
                 await this.context.SaveChangesAsync();
 
                 rm.SetResponse(true, "Datos guardados con éxito.");
@@ -75,7 +78,7 @@ namespace enfermeria.api.Repositories.Implementation
             ResponseModel rm = new ResponseModel();
             try
             {
-                var results = await this.context.CatEstados.Where(x => x.Id == id).ExecuteUpdateAsync(
+                var results = await this.context.CatTipoEnfermeras.Where(x => x.TipoEnfermeraId == id).ExecuteUpdateAsync(
                    s => s
                     .SetProperty(t => t.Activo, t => false)
                 );
@@ -98,12 +101,14 @@ namespace enfermeria.api.Repositories.Implementation
             ResponseModel rm = new ResponseModel();
             try
             {
-                List<GetEstado_Response> result = await
-                this.context.CatEstados.Select(x => new GetEstado_Response()
+                List<GetTipoEnfermera_Response> result = await
+                this.context.CatTipoEnfermeras.Select(x => new GetTipoEnfermera_Response()
                 {
-                    id = x.Id,
-                    nombre = x.Nombre,
-                    nombreCorto = x.NombreCorto,
+                    id = x.TipoEnfermeraId,
+                    no = x.No,
+                    descripcion = x.Descripcion,
+                    valor = x.Valor,
+                    costoHora = x.CostoHora,
                     activo = x.Activo ? 1 : 0,
                 }).ToListAsync();
 
@@ -123,12 +128,14 @@ namespace enfermeria.api.Repositories.Implementation
             ResponseModel rm = new ResponseModel();
             try
             {
-                GetEstado_Response? result = await
-                this.context.CatEstados.Where(x => x.Id == id).Select(x => new GetEstado_Response()
+                GetTipoEnfermera_Response? result = await
+                this.context.CatTipoEnfermeras.Where(x => x.TipoEnfermeraId == id).Select(x => new GetTipoEnfermera_Response()
                 {
-                    id = x.Id,
-                    nombre = x.Nombre,
-                    nombreCorto = x.NombreCorto,
+                    id = x.TipoEnfermeraId,
+                    no = x.No,
+                    descripcion = x.Descripcion,
+                    valor = x.Valor,
+                    costoHora = x.CostoHora,
                     activo = x.Activo ? 1 : 0,
                 }).FirstOrDefaultAsync();
 
@@ -148,12 +155,14 @@ namespace enfermeria.api.Repositories.Implementation
             ResponseModel rm = new ResponseModel();
             try
             {
-                List<GetEstado_Response> result = await
-                this.context.CatEstados.Where(x=>x.Activo == true).Select(x => new GetEstado_Response()
+                List<GetTipoEnfermera_Response> result = await
+                this.context.CatTipoEnfermeras.Where(x=>x.Activo == true).Select(x => new GetTipoEnfermera_Response()
                 {
-                    id = x.Id,
-                    nombre = x.Nombre,
-                    nombreCorto = x.NombreCorto,
+                    id = x.TipoEnfermeraId,
+                    no = x.No,
+                    descripcion = x.Descripcion,
+                    valor = x.Valor,
+                    costoHora = x.CostoHora,
                     activo = x.Activo ? 1 : 0,
                 }).ToListAsync();
 
@@ -168,15 +177,17 @@ namespace enfermeria.api.Repositories.Implementation
             return rm;
         }
 
-        public async Task<ResponseModel> Update(UpdateEstado_Request model, Guid id, string usuarioId)
+        public async Task<ResponseModel> Update(UpdateTipoEnfermera_Request model, Guid id, string usuarioId)
         {
             ResponseModel rm = new ResponseModel();
             try
             {
-                var results = await this.context.CatEstados.Where(x => x.Id == id).ExecuteUpdateAsync(
+                var results = await this.context.CatTipoEnfermeras.Where(x => x.TipoEnfermeraId == id).ExecuteUpdateAsync(
                    s => s
-                    .SetProperty(t => t.Nombre, t => model.nombre)
-                    .SetProperty(t => t.NombreCorto, t => model.nombreCorto)
+                    .SetProperty(t => t.No, t => model.no)
+                    .SetProperty(t => t.Descripcion, t => model.descripcion)
+                    .SetProperty(t => t.Valor, t => model.valor)
+                    .SetProperty(t => t.CostoHora, t => model.costoHora)
                 );
 
                 await context.SaveChangesAsync();

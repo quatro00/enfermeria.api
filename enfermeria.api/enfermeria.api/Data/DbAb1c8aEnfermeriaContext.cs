@@ -36,11 +36,15 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
 
     public virtual DbSet<CatTipoEnfermera> CatTipoEnfermeras { get; set; }
 
+    public virtual DbSet<Colaborador> Colaboradors { get; set; }
+
     public virtual DbSet<Configuracion> Configuracions { get; set; }
 
-    public virtual DbSet<Cuentum> Cuenta { get; set; }
+    public virtual DbSet<EstatusColaborador> EstatusColaboradors { get; set; }
 
     public virtual DbSet<Paciente> Pacientes { get; set; }
+
+    public virtual DbSet<RelEstadoColaborador> RelEstadoColaboradors { get; set; }
 
     public virtual DbSet<Solicitud> Solicituds { get; set; }
 
@@ -144,6 +148,40 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
             entity.Property(e => e.Descripcion).HasMaxLength(50);
         });
 
+        modelBuilder.Entity<Colaborador>(entity =>
+        {
+            entity.ToTable("Colaborador");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Apellidos).HasMaxLength(500);
+            entity.Property(e => e.Banco).HasMaxLength(50);
+            entity.Property(e => e.CedulaProfesional).HasMaxLength(500);
+            entity.Property(e => e.Clabe).HasMaxLength(50);
+            entity.Property(e => e.Colonia).HasMaxLength(500);
+            entity.Property(e => e.CorreoElectronico).HasMaxLength(500);
+            entity.Property(e => e.Cp).HasMaxLength(50);
+            entity.Property(e => e.Cuenta).HasMaxLength(50);
+            entity.Property(e => e.Curp).HasMaxLength(500);
+            entity.Property(e => e.DomicilioCalle).HasMaxLength(500);
+            entity.Property(e => e.DomicilioNumero).HasMaxLength(50);
+            entity.Property(e => e.FechaCreacion).HasColumnType("datetime");
+            entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
+            entity.Property(e => e.No).HasMaxLength(50);
+            entity.Property(e => e.Nombre).HasMaxLength(500);
+            entity.Property(e => e.Rfc).HasMaxLength(500);
+            entity.Property(e => e.Telefono).HasMaxLength(500);
+
+            entity.HasOne(d => d.EstatusColaborador).WithMany(p => p.Colaboradors)
+                .HasForeignKey(d => d.EstatusColaboradorId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Colaborador_EstatusColaborador");
+
+            entity.HasOne(d => d.TipoEnfermera).WithMany(p => p.Colaboradors)
+                .HasForeignKey(d => d.TipoEnfermeraId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Colaborador_CatTipoEnfermera");
+        });
+
         modelBuilder.Entity<Configuracion>(entity =>
         {
             entity.ToTable("Configuracion");
@@ -157,20 +195,12 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
             entity.Property(e => e.ValorString).HasMaxLength(500);
         });
 
-        modelBuilder.Entity<Cuentum>(entity =>
+        modelBuilder.Entity<EstatusColaborador>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
-            entity.Property(e => e.Apellidos).HasMaxLength(500);
-            entity.Property(e => e.CorreoElectronico).HasMaxLength(50);
-            entity.Property(e => e.FechaCreacion).HasColumnType("datetime");
-            entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
-            entity.Property(e => e.Nombre).HasMaxLength(500);
-            entity.Property(e => e.NombreUsuario).HasMaxLength(50);
-            entity.Property(e => e.Telefono).HasMaxLength(50);
+            entity.ToTable("EstatusColaborador");
 
-            entity.HasOne(d => d.TipoEnfermera).WithMany(p => p.Cuenta)
-                .HasForeignKey(d => d.TipoEnfermeraId)
-                .HasConstraintName("FK_Cuenta_CatTipoEnfermera");
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Descripcion).HasMaxLength(150);
         });
 
         modelBuilder.Entity<Paciente>(entity =>
@@ -187,6 +217,23 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
             entity.Property(e => e.Genero).HasMaxLength(50);
             entity.Property(e => e.Nombre).HasMaxLength(500);
             entity.Property(e => e.Peso).HasColumnType("decimal(18, 2)");
+        });
+
+        modelBuilder.Entity<RelEstadoColaborador>(entity =>
+        {
+            entity.ToTable("RelEstadoColaborador");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+
+            entity.HasOne(d => d.Colaborador).WithMany(p => p.RelEstadoColaboradors)
+                .HasForeignKey(d => d.ColaboradorId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_RelEstadoColaborador_Colaborador");
+
+            entity.HasOne(d => d.Estado).WithMany(p => p.RelEstadoColaboradors)
+                .HasForeignKey(d => d.EstadoId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_RelEstadoColaborador_CatEstado");
         });
 
         modelBuilder.Entity<Solicitud>(entity =>

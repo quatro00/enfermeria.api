@@ -13,5 +13,7 @@ public partial class CatEstado
 
     public bool Activo { get; set; }
 
+    public virtual ICollection<RelEstadoColaborador> RelEstadoColaboradors { get; set; } = new List<RelEstadoColaborador>();
+
     public virtual ICollection<Solicitud> Solicituds { get; set; } = new List<Solicitud>();
 }

@@ -1,6 +1,8 @@
 ﻿using enfermeria.api.Helpers;
 using enfermeria.api.Models.DTO;
+using enfermeria.api.Models.DTO.Colaborador;
 using enfermeria.api.Models.DTO.Estado;
+using enfermeria.api.Repositories.Implementation;
 using enfermeria.api.Repositories.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -10,93 +12,12 @@ namespace enfermeria.api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class EstadoController : ControllerBase
+    public class ColaboradorController : ControllerBase
     {
-        private readonly IEstadoRepository estadoRepository;
-        public EstadoController(IEstadoRepository estadoRepository)
+        private readonly IColaboradorRepository colaboradorRepository;
+        public ColaboradorController(IColaboradorRepository colaboradorRepository)
         {
-            this.estadoRepository = estadoRepository;
-        }
-
-        //endpoints de administrador
-        [HttpGet]
-        [Route("")]
-        [Authorize(Roles = "Administrador")]
-        public async Task<IActionResult> Get()
-        {
-            var response = await estadoRepository.Get();
-
-            if (!response.response)
-            {
-                ModelState.AddModelError("error", response.message);
-                return ValidationProblem(ModelState);
-            }
-
-            return Ok(response.result);
-        }
-
-        [HttpGet]
-        [Route("GetActivos")]
-        [Authorize(Roles = "Administrador")]
-        public async Task<IActionResult> GetActivos()
-        {
-            var response = await estadoRepository.GetActivos();
-
-            if (!response.response)
-            {
-                ModelState.AddModelError("error", response.message);
-                return ValidationProblem(ModelState);
-            }
-
-            return Ok(response.result);
-        }
-
-        [HttpGet]
-        [Route("{id}")]
-        [Authorize(Roles = "Administrador")]
-        public async Task<IActionResult> Get([FromRoute] Guid id)
-        {
-            var response = await estadoRepository.Get(id);
-
-            if (!response.response)
-            {
-                ModelState.AddModelError("error", response.message);
-                return ValidationProblem(ModelState);
-            }
-
-            return Ok(response.result);
-        }
-
-        [HttpPost]
-        [Route("")]
-        [Authorize(Roles = "Administrador")]
-        public async Task<IActionResult> Create([FromBody] CreateEstado_Request model)
-        {
-            var response = await estadoRepository.Create(model, User.GetId());
-
-            if (!response.response)
-            {
-                ModelState.AddModelError("error", response.message);
-                return ValidationProblem(ModelState);
-            }
-
-            return Ok(response.result);
-        }
-
-        [HttpPut]
-        [Route("{id}")]
-        [Authorize(Roles = "Administrador")]
-        public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateEstado_Request model)
-        {
-            var response = await estadoRepository.Update(model, id, User.GetId());
-
-            if (!response.response)
-            {
-                ModelState.AddModelError("error", response.message);
-                return ValidationProblem(ModelState);
-            }
-
-            return Ok(response.result);
+            this.colaboradorRepository = colaboradorRepository;
         }
 
         [HttpPost]
@@ -104,7 +25,7 @@ namespace enfermeria.api.Controllers
         [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Activar([FromBody] ActivarDesactivar_Request model)
         {
-            var response = await estadoRepository.Activar(model.id);
+            var response = await colaboradorRepository.Activar(model.id);
 
             if (!response.response)
             {
@@ -120,7 +41,71 @@ namespace enfermeria.api.Controllers
         [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Desactivar([FromBody] ActivarDesactivar_Request model)
         {
-            var response = await estadoRepository.Desactivar(model.id);
+            var response = await colaboradorRepository.Desactivar(model.id);
+
+            if (!response.response)
+            {
+                ModelState.AddModelError("error", response.message);
+                return ValidationProblem(ModelState);
+            }
+
+            return Ok(response.result);
+        }
+
+        [HttpGet]
+        [Route("")]
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> Get()
+        {
+            var response = await colaboradorRepository.Get();
+
+            if (!response.response)
+            {
+                ModelState.AddModelError("error", response.message);
+                return ValidationProblem(ModelState);
+            }
+
+            return Ok(response.result);
+        }
+
+        [HttpGet]
+        [Route("{id}")]
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> Get([FromRoute] Guid id)
+        {
+            var response = await colaboradorRepository.Get(id);
+
+            if (!response.response)
+            {
+                ModelState.AddModelError("error", response.message);
+                return ValidationProblem(ModelState);
+            }
+
+            return Ok(response.result);
+        }
+
+        [HttpPost]
+        [Route("")]
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> Create([FromBody] CreateColaborador_Request model)
+        {
+            var response = await colaboradorRepository.Create(model, User.GetId());
+
+            if (!response.response)
+            {
+                ModelState.AddModelError("error", response.message);
+                return ValidationProblem(ModelState);
+            }
+
+            return Ok(response.result);
+        }
+
+        [HttpPut]
+        [Route("{id}")]
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateColaborador_Request model)
+        {
+            var response = await colaboradorRepository.Update(model, id, User.GetId());
 
             if (!response.response)
             {

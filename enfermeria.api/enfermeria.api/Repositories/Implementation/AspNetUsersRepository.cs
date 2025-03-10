@@ -80,18 +80,18 @@ namespace enfermeria.api.Repositories.Implementation
             ResponseModel rm = new ResponseModel();
             try
             {
-                var cuenta = await context.Cuenta.Where(x => x.Id == id).FirstOrDefaultAsync();
+                var cuenta = await context.Colaboradors.Where(x => x.Id == id).FirstOrDefaultAsync();
                 var result = new UsuarioDto()
                 {
-                    nombre = cuenta.Nombre,
-                    apellido = cuenta.Apellidos,
-                    correo = cuenta.CorreoElectronico,
-                    telefono = cuenta.Telefono,
+                    nombre = "",//cuenta.Nombre,
+                    apellido = "",//cuenta.Apellidos,
+                    correo = "",//cuenta.CorreoElectronico,
+                    telefono = "",//cuenta.Telefono,
                     ciudad = "",
                     descripcion = "",
-                    activo = cuenta.Activo,
+                    activo = true //cuenta.Activo,
 
-                };
+                }; 
                 var results = result;
 
 

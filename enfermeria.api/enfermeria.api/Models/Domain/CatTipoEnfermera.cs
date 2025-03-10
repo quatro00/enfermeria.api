@@ -17,7 +17,7 @@ public partial class CatTipoEnfermera
 
     public bool Activo { get; set; }
 
-    public virtual ICollection<Cuentum> Cuenta { get; set; } = new List<Cuentum>();
+    public virtual ICollection<Colaborador> Colaboradors { get; set; } = new List<Colaborador>();
 
     public virtual ICollection<Solicitud> Solicituds { get; set; } = new List<Solicitud>();
 }

@@ -1,4 +1,4 @@
-﻿namespace enfermeria.api.Models.DTO.Estado
+﻿namespace enfermeria.api.Models.DTO
 {
     public class ActivarDesactivar_Request
     {
