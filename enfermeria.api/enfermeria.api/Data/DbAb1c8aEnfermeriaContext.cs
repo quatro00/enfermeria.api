@@ -209,6 +209,7 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Apellidos).HasMaxLength(500);
+            entity.Property(e => e.CorreoElectronico).HasMaxLength(500);
             entity.Property(e => e.DescripcionDiscapacidad).HasMaxLength(500);
             entity.Property(e => e.Estatura).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.FechaCreacion).HasColumnType("datetime");
@@ -217,6 +218,7 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
             entity.Property(e => e.Genero).HasMaxLength(50);
             entity.Property(e => e.Nombre).HasMaxLength(500);
             entity.Property(e => e.Peso).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Telefono).HasMaxLength(500);
         });
 
         modelBuilder.Entity<RelEstadoColaborador>(entity =>

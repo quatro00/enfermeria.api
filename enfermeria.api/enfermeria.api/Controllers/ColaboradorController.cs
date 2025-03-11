@@ -52,6 +52,22 @@ namespace enfermeria.api.Controllers
             return Ok(response.result);
         }
 
+        [HttpPost]
+        [Route("GetColaboradores")]
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> GetColaboradores(GetColaboradores_Request model)
+        {
+            var response = await colaboradorRepository.GetColaboradores(model);
+
+            if (!response.response)
+            {
+                ModelState.AddModelError("error", response.message);
+                return ValidationProblem(ModelState);
+            }
+
+            return Ok(response.result);
+        }
+
         [HttpGet]
         [Route("")]
         [Authorize(Roles = "Administrador")]

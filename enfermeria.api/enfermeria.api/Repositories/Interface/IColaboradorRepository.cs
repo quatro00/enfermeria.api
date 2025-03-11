@@ -7,6 +7,7 @@ namespace enfermeria.api.Repositories.Interface
     {
         Task<ResponseModel> Get();
         Task<ResponseModel> Get(Guid id);
+        Task<ResponseModel> GetColaboradores(GetColaboradores_Request model);
         Task<ResponseModel> Create(CreateColaborador_Request model, string usuarioId);
         Task<ResponseModel> Update(UpdateColaborador_Request model, Guid id, string usuarioId);
         Task<ResponseModel> Activar(Guid id);

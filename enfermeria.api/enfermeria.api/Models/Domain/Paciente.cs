@@ -13,6 +13,10 @@ public partial class Paciente
 
     public string Apellidos { get; set; } = null!;
 
+    public string Telefono { get; set; } = null!;
+
+    public string CorreoElectronico { get; set; } = null!;
+
     public DateTime FechaNacimiento { get; set; }
 
     public string Genero { get; set; } = null!;

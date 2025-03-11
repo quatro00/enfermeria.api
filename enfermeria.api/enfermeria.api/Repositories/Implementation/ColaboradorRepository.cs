@@ -239,6 +239,54 @@ namespace enfermeria.api.Repositories.Implementation
             return rm;
         }
 
+        public async Task<ResponseModel> GetColaboradores(GetColaboradores_Request model)
+        {
+            ResponseModel rm = new ResponseModel();
+            Guid? tipo = null;
+            if (model.tipo != "0") 
+            { 
+                tipo = Guid.Parse(model.tipo);
+            }
+
+            try
+            {
+                
+                List<GetColaboradores_Response> result = await
+                this.context.Colaboradors.Include(x=>x.EstatusColaborador).Include(x => x.TipoEnfermera)
+                .Where(x =>
+                (x.Nombre.Contains(model.nombre ?? "") || model.nombre == null) &&
+                (x.Apellidos.Contains(model.nombre ?? "") || model.nombre == null) &&
+                (x.CorreoElectronico.Contains(model.correoElectronico ?? "") || model.correoElectronico == null) &&
+                (x.Telefono.Contains(model.telefono ?? "") || x.Telefono == null) &&
+                (x.TipoEnfermeraId == tipo || tipo == null))
+                .Select(x => new GetColaboradores_Response()
+                {
+                    id = x.Id,
+                    no = x.No,
+                    nombre = $"{x.Nombre.Trim()} {x.Apellidos.Trim()}",
+                    telefono = x.Telefono,
+                    correoElectronico = x.CorreoElectronico,
+                    rfc = x.Rfc,
+                    curp = x.Curp,
+                    cedula = x.CedulaProfesional,
+                    domicilio = $"{x.DomicilioCalle.Trim()} {x.DomicilioNumero.Trim()}, {x.Colonia.Trim()}",
+                    estados = x.RelEstadoColaboradors.Select(x=>x.Estado.Nombre).ToList(),
+                    estatus = x.EstatusColaborador.Descripcion,
+                    activo = x.Activo ? 1 : 0,
+                })
+                .ToListAsync();
+
+                rm.result = result;
+                rm.SetResponse(true, "Datos guardados con éxito.");
+
+            }
+            catch (Exception ex)
+            {
+                rm.SetResponse(false, $"Ocurrio un error inesperado. [{ex.InnerException.Message}]");
+            }
+            return rm;
+        }
+
         public Task<ResponseModel> Update(UpdateColaborador_Request model, Guid id, string usuarioId)
         {
             throw new NotImplementedException();
