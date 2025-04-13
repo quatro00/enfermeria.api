@@ -3,6 +3,7 @@ using enfermeria.api.Models.DTO;
 using enfermeria.api.Models.Interfaces;
 using enfermeria.api.Repositories.Interface;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using System.Linq.Expressions;
 
 namespace enfermeria.api.Repositories.Implementation
@@ -31,7 +32,21 @@ namespace enfermeria.api.Repositories.Implementation
 
         public async Task UpdateAsync(T entity)
         {
-            _dbSet.Update(entity);
+            _dbSet.Attach(entity);
+
+            // Marcar toda la entidad como modificada
+            _context.Entry(entity).State = EntityState.Modified;
+
+            // Evitar modificar propiedades identity (por ejemplo: No)
+            var identityProps = _context.Entry(entity).Properties
+                .Where(p => p.Metadata.IsPrimaryKey() || p.Metadata.ValueGenerated == ValueGenerated.OnAdd)
+                .ToList();
+
+            foreach (var prop in identityProps)
+            {
+                prop.IsModified = false;
+            }
+
             await _context.SaveChangesAsync();
         }
 

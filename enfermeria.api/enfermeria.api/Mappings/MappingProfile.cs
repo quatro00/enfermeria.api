@@ -11,6 +11,10 @@
         {
             //convertir de paciente a pacientedto
             CreateMap<Paciente, GetPacienteDto>();
+            CreateMap<UpdatePacienteDto, Paciente>()
+                 .ForMember(dest => dest.FechaModificacion, opt => opt.MapFrom(src => DateTime.Now));
+
+
             // Mapeo de PacienteCreateDto a Paciente
             CreateMap<CrearPacienteDto, Paciente>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore()) // El ID lo genera la BD
