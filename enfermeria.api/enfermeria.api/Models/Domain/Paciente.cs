@@ -39,5 +39,7 @@ public partial class Paciente
 
     public Guid? UsuarioModificacion { get; set; }
 
+    public virtual ICollection<Contacto> Contactos { get; set; } = new List<Contacto>();
+
     public virtual ICollection<Solicitud> Solicituds { get; set; } = new List<Solicitud>();
 }

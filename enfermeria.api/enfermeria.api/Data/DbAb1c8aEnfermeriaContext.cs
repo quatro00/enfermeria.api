@@ -40,6 +40,8 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
 
     public virtual DbSet<Configuracion> Configuracions { get; set; }
 
+    public virtual DbSet<Contacto> Contactos { get; set; }
+
     public virtual DbSet<EstatusColaborador> EstatusColaboradors { get; set; }
 
     public virtual DbSet<Paciente> Pacientes { get; set; }
@@ -195,6 +197,24 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
             entity.Property(e => e.ValorString).HasMaxLength(500);
         });
 
+        modelBuilder.Entity<Contacto>(entity =>
+        {
+            entity.ToTable("Contacto");
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newsequentialid())");
+            entity.Property(e => e.CorreoElectronico).HasMaxLength(50);
+            entity.Property(e => e.FechaCreacion).HasColumnType("datetime");
+            entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
+            entity.Property(e => e.Nombre).HasMaxLength(500);
+            entity.Property(e => e.Parentezco).HasMaxLength(150);
+            entity.Property(e => e.Telefono).HasMaxLength(50);
+
+            entity.HasOne(d => d.Paciente).WithMany(p => p.Contactos)
+                .HasForeignKey(d => d.PacienteId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Contacto_Paciente");
+        });
+
         modelBuilder.Entity<EstatusColaborador>(entity =>
         {
             entity.ToTable("EstatusColaborador");
@@ -207,7 +227,7 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
         {
             entity.ToTable("Paciente");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasDefaultValueSql("(newsequentialid())");
             entity.Property(e => e.Apellidos).HasMaxLength(500);
             entity.Property(e => e.CorreoElectronico).HasMaxLength(500);
             entity.Property(e => e.DescripcionDiscapacidad).HasMaxLength(500);
@@ -216,6 +236,7 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
             entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
             entity.Property(e => e.FechaNacimiento).HasColumnType("datetime");
             entity.Property(e => e.Genero).HasMaxLength(50);
+            entity.Property(e => e.No).ValueGeneratedOnAdd();
             entity.Property(e => e.Nombre).HasMaxLength(500);
             entity.Property(e => e.Peso).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.Telefono).HasMaxLength(500);

@@ -1,4 +1,5 @@
 using enfermeria.api.Data;
+using enfermeria.api.Mappings;
 using enfermeria.api.Models.Stripe;
 using enfermeria.api.Repositories.Implementation;
 using enfermeria.api.Repositories.Interface;
@@ -34,6 +35,9 @@ builder.Services.AddScoped<IAspNetUsersRepository, AspNetUsersRepository>();
 builder.Services.AddScoped<IEstadoRepository, EstadoRepository>();
 builder.Services.AddScoped<ITipoEnfermeraRepository, TipoEnfermeraRepository>();
 builder.Services.AddScoped<IColaboradorRepository, ColaboradorRepository>();
+builder.Services.AddScoped<IPacienteRepository, PacienteRepository>();
+
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 builder.Services.AddIdentityCore<IdentityUser>()
     .AddRoles<IdentityRole>()
