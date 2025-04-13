@@ -9,6 +9,8 @@
     {
         public MappingProfile()
         {
+            //convertir de paciente a pacientedto
+            CreateMap<Paciente, GetPacienteDto>();
             // Mapeo de PacienteCreateDto a Paciente
             CreateMap<CrearPacienteDto, Paciente>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore()) // El ID lo genera la BD
