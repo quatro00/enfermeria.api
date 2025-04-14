@@ -22,5 +22,7 @@ namespace enfermeria.api.Repositories.Interface
             ISpecification<T> spec,
             PaginationFilter pagination,
             Expression<Func<T, TResult>> selector);
+
+        Task<bool> AnyAsync(Expression<Func<T, bool>> predicate);
     }
 }

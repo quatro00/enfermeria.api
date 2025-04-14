@@ -34,9 +34,13 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
 
     public virtual DbSet<CatEstatusSolicitud> CatEstatusSolicituds { get; set; }
 
+    public virtual DbSet<CatTipoDocumento> CatTipoDocumentos { get; set; }
+
     public virtual DbSet<CatTipoEnfermera> CatTipoEnfermeras { get; set; }
 
     public virtual DbSet<Colaborador> Colaboradors { get; set; }
+
+    public virtual DbSet<ColaboradorDocumento> ColaboradorDocumentos { get; set; }
 
     public virtual DbSet<Configuracion> Configuracions { get; set; }
 
@@ -139,6 +143,14 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
                 .IsFixedLength();
         });
 
+        modelBuilder.Entity<CatTipoDocumento>(entity =>
+        {
+            entity.ToTable("CatTipoDocumento");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.TipoDocumento).HasMaxLength(50);
+        });
+
         modelBuilder.Entity<CatTipoEnfermera>(entity =>
         {
             entity.HasKey(e => e.TipoEnfermeraId);
@@ -156,6 +168,7 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Apellidos).HasMaxLength(500);
+            entity.Property(e => e.Avatar).HasMaxLength(500);
             entity.Property(e => e.Banco).HasMaxLength(50);
             entity.Property(e => e.CedulaProfesional).HasMaxLength(500);
             entity.Property(e => e.Clabe).HasMaxLength(50);
@@ -168,7 +181,7 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
             entity.Property(e => e.DomicilioNumero).HasMaxLength(50);
             entity.Property(e => e.FechaCreacion).HasColumnType("datetime");
             entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
-            entity.Property(e => e.No).HasMaxLength(50);
+            entity.Property(e => e.No).ValueGeneratedOnAdd();
             entity.Property(e => e.Nombre).HasMaxLength(500);
             entity.Property(e => e.Rfc).HasMaxLength(500);
             entity.Property(e => e.Telefono).HasMaxLength(500);
@@ -182,6 +195,27 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
                 .HasForeignKey(d => d.TipoEnfermeraId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Colaborador_CatTipoEnfermera");
+        });
+
+        modelBuilder.Entity<ColaboradorDocumento>(entity =>
+        {
+            entity.ToTable("ColaboradorDocumento");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Descripcion).HasMaxLength(50);
+            entity.Property(e => e.FechaCreacion).HasColumnType("datetime");
+            entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
+            entity.Property(e => e.Ruta).HasMaxLength(500);
+
+            entity.HasOne(d => d.Colaborador).WithMany(p => p.ColaboradorDocumentos)
+                .HasForeignKey(d => d.ColaboradorId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ColaboradorDocumento_Colaborador");
+
+            entity.HasOne(d => d.TipoDocumento).WithMany(p => p.ColaboradorDocumentos)
+                .HasForeignKey(d => d.TipoDocumentoId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ColaboradorDocumento_CatTipoDocumento");
         });
 
         modelBuilder.Entity<Configuracion>(entity =>

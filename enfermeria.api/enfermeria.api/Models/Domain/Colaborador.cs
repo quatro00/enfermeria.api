@@ -7,7 +7,9 @@ public partial class Colaborador
 {
     public Guid Id { get; set; }
 
-    public string No { get; set; } = null!;
+    public int No { get; set; }
+
+    public string Avatar { get; set; } = null!;
 
     public string Nombre { get; set; } = null!;
 
@@ -41,6 +43,8 @@ public partial class Colaborador
 
     public Guid TipoEnfermeraId { get; set; }
 
+    public bool CuentaCreada { get; set; }
+
     public bool Activo { get; set; }
 
     public DateTime FechaCreacion { get; set; }
@@ -50,6 +54,8 @@ public partial class Colaborador
     public DateTime? FechaModificacion { get; set; }
 
     public Guid? UsuarioModificacionId { get; set; }
+
+    public virtual ICollection<ColaboradorDocumento> ColaboradorDocumentos { get; set; } = new List<ColaboradorDocumento>();
 
     public virtual EstatusColaborador EstatusColaborador { get; set; } = null!;
 
