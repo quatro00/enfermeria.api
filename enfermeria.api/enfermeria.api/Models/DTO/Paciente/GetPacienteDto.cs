@@ -25,6 +25,7 @@
         public bool Discapacidad { get; set; }
 
         public string DescripcionDiscapacidad { get; set; } = null!;
+        public bool Activo { get; set; }
 
         // Puedes incluir solo lo que quieres exponer, por ejemplo:
         //public List<GetPacienteContactoDto> Contactos { get; set; }

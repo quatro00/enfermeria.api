@@ -4,7 +4,7 @@
     {
         public bool IncluirInactivos { get; set; } = false;
         public string? Nombre { get; set; }
-        //public string? Estado { get; set; }
+        public string? CorreoElectronico { get; set; }
         //public string? Especialidad { get; set; }
     }
 }

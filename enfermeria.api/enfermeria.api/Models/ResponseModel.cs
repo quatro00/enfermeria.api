@@ -18,6 +18,7 @@
             this.response = r;
             this.message = m;
 
+            /*
             if (m == "")
             {
                 switch (r)
@@ -30,6 +31,7 @@
                         break;
                 }
             }
+            */
         }
     }
 
@@ -51,10 +53,10 @@
             this.Response = r;
             this.Message = m;
 
-            if (string.IsNullOrEmpty(m))
-            {
-                this.Message = r ? "Datos guardados con éxito." : "Ocurrió un error inesperado";
-            }
+            //if (string.IsNullOrEmpty(m))
+            //{
+            //    this.Message = r ? "Datos guardados con éxito." : "Ocurrió un error inesperado";
+            //}
         }
     }
 }

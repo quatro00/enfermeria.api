@@ -89,7 +89,10 @@ namespace enfermeria.api.Controllers
         {
             //creamos la respuesta
             var response = new ResponseModel_2<List<GetPacienteDto>>();
-
+            if (User.IsInRole("Administrador"))
+            {
+                filtro.IncluirInactivos = true;
+            }
             try
             {
                 //colocamos los filtros

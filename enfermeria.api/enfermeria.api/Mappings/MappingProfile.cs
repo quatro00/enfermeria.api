@@ -3,12 +3,16 @@
     using AutoMapper;
     using enfermeria.api.Models.Domain;
     using enfermeria.api.Models.DTO;
+    using enfermeria.api.Models.DTO.Contacto;
     using enfermeria.api.Models.DTO.Paciente;
 
     public class MappingProfile : Profile
     {
         public MappingProfile()
         {
+            //mapeo contacto
+            CreateMap<UpdateContactoDto, Contacto>();
+            CreateMap<Contacto, GetContactoDto>();
             //convertir de paciente a pacientedto
             CreateMap<Paciente, GetPacienteDto>();
             CreateMap<UpdatePacienteDto, Paciente>()
