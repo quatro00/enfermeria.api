@@ -33,7 +33,7 @@ public partial class Colaborador
 
     public string Colonia { get; set; } = null!;
 
-    public string Banco { get; set; } = null!;
+    public int BancoId { get; set; }
 
     public string Clabe { get; set; } = null!;
 
@@ -43,7 +43,7 @@ public partial class Colaborador
 
     public Guid TipoEnfermeraId { get; set; }
 
-    public bool CuentaCreada { get; set; }
+    public bool? CuentaCreada { get; set; }
 
     public bool Activo { get; set; }
 
@@ -54,6 +54,8 @@ public partial class Colaborador
     public DateTime? FechaModificacion { get; set; }
 
     public Guid? UsuarioModificacionId { get; set; }
+
+    public virtual CatBanco Banco { get; set; } = null!;
 
     public virtual ICollection<ColaboradorDocumento> ColaboradorDocumentos { get; set; } = new List<ColaboradorDocumento>();
 

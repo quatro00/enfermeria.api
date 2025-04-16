@@ -62,7 +62,25 @@ namespace enfermeria.api.Repositories.Implementation
 
         public async Task<List<T>> ListAsync(ISpecification<T> spec)
         {
-            return await _dbSet.Where(spec.Criteria).ToListAsync();
+            IQueryable<T> query = _dbSet;
+
+            if (spec.Criteria != null)
+                query = query.Where(spec.Criteria);
+
+            if (spec.IncludeStrings != null)
+            {
+                foreach (var includeStr in spec.IncludeStrings)
+                {
+                    query = query.Include(includeStr);
+                }
+            }
+
+            return await query.ToListAsync();
+        }
+
+        public async Task<List<T>> ListAsync()
+        {
+            return await _dbSet.ToListAsync();
         }
 
         public async Task<PaginatedResult<T>> ListAsync(ISpecification<T> spec, PaginationFilter pagination)

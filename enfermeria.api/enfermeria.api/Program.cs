@@ -69,6 +69,8 @@ builder.Services.AddScoped<ITipoEnfermeraRepository, TipoEnfermeraRepository>();
 builder.Services.AddScoped<IPacienteRepository, PacienteRepository>();
 builder.Services.AddScoped<IContactoRepository, ContactoRepository>();
 builder.Services.AddScoped<IColaboradorRepository, ColaboradorRepository>();
+builder.Services.AddScoped<IBancoRepository, BancoRepository>();
+builder.Services.AddScoped<IColaboradorDocumentoRepository, ColaboradorDocumentoRepository>();
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 

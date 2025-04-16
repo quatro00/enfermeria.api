@@ -30,6 +30,8 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
 
     public virtual DbSet<AspNetUserToken> AspNetUserTokens { get; set; }
 
+    public virtual DbSet<CatBanco> CatBancos { get; set; }
+
     public virtual DbSet<CatEstado> CatEstados { get; set; }
 
     public virtual DbSet<CatEstatusSolicitud> CatEstatusSolicituds { get; set; }
@@ -124,6 +126,14 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
             entity.HasOne(d => d.User).WithMany(p => p.AspNetUserTokens).HasForeignKey(d => d.UserId);
         });
 
+        modelBuilder.Entity<CatBanco>(entity =>
+        {
+            entity.ToTable("CatBanco");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Nombre).HasMaxLength(50);
+        });
+
         modelBuilder.Entity<CatEstado>(entity =>
         {
             entity.ToTable("CatEstado");
@@ -166,10 +176,9 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
         {
             entity.ToTable("Colaborador");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasDefaultValueSql("(newsequentialid())");
             entity.Property(e => e.Apellidos).HasMaxLength(500);
             entity.Property(e => e.Avatar).HasMaxLength(500);
-            entity.Property(e => e.Banco).HasMaxLength(50);
             entity.Property(e => e.CedulaProfesional).HasMaxLength(500);
             entity.Property(e => e.Clabe).HasMaxLength(50);
             entity.Property(e => e.Colonia).HasMaxLength(500);
@@ -186,6 +195,11 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
             entity.Property(e => e.Rfc).HasMaxLength(500);
             entity.Property(e => e.Telefono).HasMaxLength(500);
 
+            entity.HasOne(d => d.Banco).WithMany(p => p.Colaboradors)
+                .HasForeignKey(d => d.BancoId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Colaborador_CatBanco");
+
             entity.HasOne(d => d.EstatusColaborador).WithMany(p => p.Colaboradors)
                 .HasForeignKey(d => d.EstatusColaboradorId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -201,11 +215,13 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
         {
             entity.ToTable("ColaboradorDocumento");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasDefaultValueSql("(newsequentialid())");
             entity.Property(e => e.Descripcion).HasMaxLength(50);
             entity.Property(e => e.FechaCreacion).HasColumnType("datetime");
             entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
+            entity.Property(e => e.NombreArchivo).HasMaxLength(50);
             entity.Property(e => e.Ruta).HasMaxLength(500);
+            entity.Property(e => e.RutaFisica).HasMaxLength(500);
 
             entity.HasOne(d => d.Colaborador).WithMany(p => p.ColaboradorDocumentos)
                 .HasForeignKey(d => d.ColaboradorId)
@@ -280,7 +296,7 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
         {
             entity.ToTable("RelEstadoColaborador");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasDefaultValueSql("(newsequentialid())");
 
             entity.HasOne(d => d.Colaborador).WithMany(p => p.RelEstadoColaboradors)
                 .HasForeignKey(d => d.ColaboradorId)

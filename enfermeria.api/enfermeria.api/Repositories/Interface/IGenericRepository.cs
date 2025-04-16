@@ -15,6 +15,7 @@ namespace enfermeria.api.Repositories.Interface
         Task DeleteAsync(Guid id);
 
         Task<List<T>> ListAsync(ISpecification<T> spec);
+        Task<List<T>> ListAsync();
 
         Task<PaginatedResult<T>> ListAsync(ISpecification<T> spec, PaginationFilter pagination);
 

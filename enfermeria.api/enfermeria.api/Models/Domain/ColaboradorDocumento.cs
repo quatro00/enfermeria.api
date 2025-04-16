@@ -15,6 +15,10 @@ public partial class ColaboradorDocumento
 
     public string Ruta { get; set; } = null!;
 
+    public string RutaFisica { get; set; } = null!;
+
+    public string NombreArchivo { get; set; } = null!;
+
     public bool Activo { get; set; }
 
     public DateTime FechaCreacion { get; set; }

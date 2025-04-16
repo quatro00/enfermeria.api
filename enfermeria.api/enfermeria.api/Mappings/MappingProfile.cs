@@ -1,8 +1,11 @@
 ﻿namespace enfermeria.api.Mappings
 {
     using AutoMapper;
+    using enfermeria.api.Enums;
     using enfermeria.api.Models.Domain;
     using enfermeria.api.Models.DTO;
+    using enfermeria.api.Models.DTO.Banco;
+    using enfermeria.api.Models.DTO.Colaborador;
     using enfermeria.api.Models.DTO.Contacto;
     using enfermeria.api.Models.DTO.Paciente;
 
@@ -10,6 +13,19 @@
     {
         public MappingProfile()
         {
+            //mapeo colaborador
+            CreateMap<Colaborador, ColaboradorDto>()
+                .ForMember(dest => dest.Estatus, opt => opt.MapFrom(src => src.EstatusColaborador.Descripcion))
+                .ForMember(dest => dest.Estados, opt => opt.MapFrom(src => src.RelEstadoColaboradors.Select(x=>x.Estado.Nombre).ToList().Order()));
+            CreateMap<CrearColaboradorDto, Colaborador>()
+                .ForMember(dest => dest.Activo, opt => opt.MapFrom(src => true))
+                .ForMember(dest => dest.EstatusColaboradorId, opt => opt.MapFrom(src => (int)EstatusColaboradorEnum.PreRegistro))
+                .ForMember(dest => dest.FechaCreacion, opt => opt.MapFrom(src => DateTime.Now))
+                .ForMember(dest => dest.CuentaCreada, opt => opt.MapFrom(src => false))
+                .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => ""))
+                ;
+            //mapeo banco
+            CreateMap<CatBanco, BancoDto>();
             //mapeo contacto
             CreateMap<UpdateContactoDto, Contacto>();
             CreateMap<Contacto, GetContactoDto>();
