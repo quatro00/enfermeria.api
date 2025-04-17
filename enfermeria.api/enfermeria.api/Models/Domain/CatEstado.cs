@@ -15,5 +15,5 @@ public partial class CatEstado
 
     public virtual ICollection<RelEstadoColaborador> RelEstadoColaboradors { get; set; } = new List<RelEstadoColaborador>();
 
-    public virtual ICollection<Solicitud> Solicituds { get; set; } = new List<Solicitud>();
+    public virtual ICollection<Servicio> Servicios { get; set; } = new List<Servicio>();
 }

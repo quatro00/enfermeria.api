@@ -41,5 +41,5 @@ public partial class Paciente
 
     public virtual ICollection<Contacto> Contactos { get; set; } = new List<Contacto>();
 
-    public virtual ICollection<Solicitud> Solicituds { get; set; } = new List<Solicitud>();
+    public virtual ICollection<Servicio> Servicios { get; set; } = new List<Servicio>();
 }

@@ -19,5 +19,5 @@ public partial class CatTipoEnfermera
 
     public virtual ICollection<Colaborador> Colaboradors { get; set; } = new List<Colaborador>();
 
-    public virtual ICollection<Solicitud> Solicituds { get; set; } = new List<Solicitud>();
+    public virtual ICollection<Servicio> Servicios { get; set; } = new List<Servicio>();
 }
