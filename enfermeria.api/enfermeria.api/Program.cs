@@ -1,5 +1,6 @@
 using enfermeria.api.Data;
 using enfermeria.api.Mappings;
+using enfermeria.api.Models.DTO.Mail;
 using enfermeria.api.Models.Stripe;
 using enfermeria.api.Repositories.Implementation;
 using enfermeria.api.Repositories.Interface;
@@ -17,7 +18,13 @@ QuestPDF.Settings.License = LicenseType.Community;
 
 // Add services to the container.
 
+
 builder.Services.AddControllers();
+
+var emailSettings = builder.Configuration.GetSection("EmailSettings").Get<EmailSettings>();
+builder.Services.AddSingleton(emailSettings);
+builder.Services.AddScoped<IEmailService, EmailService>();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>

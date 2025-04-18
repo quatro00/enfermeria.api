@@ -1,0 +1,37 @@
+name: Deploy to SmarterASP.NET
+
+on:
+  push:
+    branches:
+      - main  # Cambia si tu rama de producción es otra
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '7.0.x' # Cambia si usas otra versión
+
+    - name: Restore dependencies
+      run: dotnet restore ./enfermeria.api/enfermeria.api.csproj
+
+    - name: Build
+      run: dotnet build ./enfermeria.api/enfermeria.api.csproj --configuration Release
+
+    - name: Publish
+      run: dotnet publish ./enfermeria.api/enfermeria.api.csproj -c Release -o ./publish
+
+    - name: Deploy to FTP
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      with:
+        server: ${{ secrets.FTP_HOST }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: ./publish
+        server-dir: /  # Asegúrate que sea la ruta correcta en tu servidor

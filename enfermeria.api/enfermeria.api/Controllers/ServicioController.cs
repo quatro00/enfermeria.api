@@ -17,6 +17,9 @@ using enfermeria.api.Models.DTO.Estado;
 using enfermeria.api.Models.DTO.Colaborador;
 using enfermeria.api.Models.DTO;
 using enfermeria.api.Models.Specifications;
+using enfermeria.api.Models.DTO.Mail;
+using System.Net.Mail;
+using System.Net.Mime;
 
 namespace enfermeria.api.Controllers
 {
@@ -31,6 +34,7 @@ namespace enfermeria.api.Controllers
         private readonly IEstadoRepository estadoRepository;
         private readonly ITipoLugarRepository tipoLugarRepository;
         private readonly IPacienteRepository pacienteRepository;
+        private readonly IEmailService emailService;
 
         public ServicioController(
             IServicioRepository servicioRepository, 
@@ -39,7 +43,8 @@ namespace enfermeria.api.Controllers
             ITipoEnfermeraRepository tipoEnfermeraRepository, 
             IEstadoRepository estadoRepository, 
             ITipoLugarRepository tipoLugarRepository,
-            IPacienteRepository pacienteRepository)
+            IPacienteRepository pacienteRepository,
+            IEmailService emailService)
         {
             this.servicioRepository = servicioRepository;
             this.horarioRepository = horarioRepository;
@@ -47,7 +52,56 @@ namespace enfermeria.api.Controllers
             this.estadoRepository = estadoRepository;
             this.tipoLugarRepository = tipoLugarRepository;
             this.pacienteRepository = pacienteRepository;
+            this.emailService = emailService;
             this.mapper = mapper;
+        }
+
+        [HttpPost("enviar-cotizacion/{id}")]
+        public async Task<IActionResult> EnviarCotizacionPorCorreo(Guid id, [FromQuery] string correoAdicional)
+        {
+            // 1. Obtener la cotización con los includes necesarios
+            var servicio = await servicioRepository.GetByIdAsync(
+                id,
+                "Id",
+                "Estado",
+                "TipoLugar",
+                "TipoEnfermera",
+                "Paciente",
+                "ServicioFechas",
+                "ServicioFechas.ServicioCotizacions"
+            );
+
+            if (servicio == null)
+                return NotFound("No se encontró la cotización.");
+
+            // 2. Generar PDF temporalmente
+            var fileName = $"Cotizacion_{servicio.No}.pdf";
+            var filePath = Path.Combine(Path.GetTempPath(), fileName);
+            CotizacionPdfGenerator.GenerarPdf(servicio, filePath);
+
+            // 3. Leer PDF como adjunto
+            var pdfBytes = await System.IO.File.ReadAllBytesAsync(filePath);
+            var stream = new MemoryStream(pdfBytes);
+            var attachment = new Attachment(stream, fileName, MediaTypeNames.Application.Pdf);
+
+            var destinatarios = correoAdicional.Split(",").ToList();
+            //destinatarios.Add(servicio.Paciente.CorreoElectronico);
+            
+
+            // 4. Enviar correo
+            var request = new EmailRequest
+            {
+                ToMultiple = destinatarios,
+                To = "josecarlosgarciadiaz@gmail.com",//servicio.Paciente.CorreoElectronico,
+                Subject = $"Cotización de servicio #{servicio.No}",
+                Body = "<p>Adjuntamos su cotización de servicio de enfermería.</p>",
+                Attachments = new List<Attachment> { attachment },
+                
+            };
+
+            await emailService.SendEmailAsync(request);
+
+            return NoContent();
         }
 
         [HttpGet("ObtenerCotizacion/{id}")]
@@ -84,7 +138,6 @@ namespace enfermeria.api.Controllers
             // 3. Retornar el PDF como archivo descargable
             return File(fileBytes, "application/pdf", $"cotizacion-{id}.pdf");
         }
-
         [HttpPost]
         [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> CrearServicio([FromBody] CrearServicioDto dto)
