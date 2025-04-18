@@ -341,7 +341,6 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
             entity.ToTable("Servicio");
 
             entity.Property(e => e.Id).HasDefaultValueSql("(newsequentialid())");
-            entity.Property(e => e.CostoEstimado).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.CostoEstimadoHora).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.CuidadosNocturnosDesc).HasMaxLength(500);
             entity.Property(e => e.Descuento).HasColumnType("decimal(18, 2)");
@@ -350,17 +349,21 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
             entity.Property(e => e.EnfermedadDiagnosticadaDesc).HasMaxLength(500);
             entity.Property(e => e.FechaCreacion).HasColumnType("datetime");
             entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
+            entity.Property(e => e.Impuestos).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.Lat).HasMaxLength(50);
             entity.Property(e => e.Lon).HasMaxLength(50);
             entity.Property(e => e.No).ValueGeneratedOnAdd();
             entity.Property(e => e.Observaciones).HasMaxLength(500);
             entity.Property(e => e.PrincipalRazon).HasMaxLength(500);
+            entity.Property(e => e.ReferenciaPagoStripe).HasMaxLength(500);
             entity.Property(e => e.RequiereAtencionNeurologicaDesc).HasMaxLength(500);
             entity.Property(e => e.RequiereAyudaBasicaDesc).HasMaxLength(500);
             entity.Property(e => e.RequiereCuidadosCriticosDesc).HasMaxLength(500);
             entity.Property(e => e.RequiereCuracionesDesc).HasMaxLength(500);
             entity.Property(e => e.RequiereMonitoreoDesc).HasMaxLength(500);
+            entity.Property(e => e.SubTotalPropuesto).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.TomaMedicamentoDesc).HasMaxLength(500);
+            entity.Property(e => e.Total).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.TotalHoras).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.Vigencia).HasColumnType("datetime");
 

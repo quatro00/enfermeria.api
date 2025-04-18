@@ -63,11 +63,15 @@ public partial class Servicio
 
     public decimal TotalHoras { get; set; }
 
-    public decimal CostoEstimadoHora { get; set; }
+    public decimal SubTotalPropuesto { get; set; }
+
+    public decimal Impuestos { get; set; }
 
     public decimal Descuento { get; set; }
 
-    public decimal CostoEstimado { get; set; }
+    public decimal CostoEstimadoHora { get; set; }
+
+    public decimal Total { get; set; }
 
     public Guid TipoEnfermeraId { get; set; }
 
@@ -76,6 +80,8 @@ public partial class Servicio
     public string Observaciones { get; set; } = null!;
 
     public Guid? UsuarioId { get; set; }
+
+    public string? ReferenciaPagoStripe { get; set; }
 
     public bool Activo { get; set; }
 

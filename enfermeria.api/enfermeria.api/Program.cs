@@ -85,6 +85,7 @@ builder.Services.AddScoped<IColaboradorDocumentoRepository, ColaboradorDocumento
 builder.Services.AddScoped<ITipoLugarRepository, TipoLugarRepository>();
 builder.Services.AddScoped<IServicioRepository, ServicioRepository>();
 builder.Services.AddScoped<IHorarioRepository, HorarioRepository>();
+builder.Services.AddScoped<IConfiguracionRepository, ConfiguracionRepository>();
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
@@ -139,11 +140,14 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 // Configure the HTTP request pipeline.
-//if (app.Environment.IsDevelopment())
-//{
+if (
+    app.Environment.IsDevelopment() 
+    || app.Environment.IsProduction()
+    )
+{
 app.UseSwagger();
 app.UseSwaggerUI();
-//}
+}
 
 
 

@@ -20,6 +20,18 @@ using enfermeria.api.Models.Specifications;
 using enfermeria.api.Models.DTO.Mail;
 using System.Net.Mail;
 using System.Net.Mime;
+using enfermeria.api.Repositories.OpenPay;
+using enfermeria.api.Repositories.Stripe;
+using Microsoft.EntityFrameworkCore;
+
+using Stripe;
+
+
+using Stripe;
+using Microsoft.AspNetCore.Mvc;
+using System.IO;
+using System.Threading.Tasks;
+using Stripe.Checkout;
 
 namespace enfermeria.api.Controllers
 {
@@ -34,7 +46,11 @@ namespace enfermeria.api.Controllers
         private readonly IEstadoRepository estadoRepository;
         private readonly ITipoLugarRepository tipoLugarRepository;
         private readonly IPacienteRepository pacienteRepository;
+        private readonly IConfiguracionRepository configuracionRepository;
         private readonly IEmailService emailService;
+
+        private readonly StripePaymentService stripePaymentService;
+        private readonly string _stripeWebhookSecret = "whsec_XXXXXXXXXXXXXXXXXXXXX";
 
         public ServicioController(
             IServicioRepository servicioRepository, 
@@ -44,7 +60,9 @@ namespace enfermeria.api.Controllers
             IEstadoRepository estadoRepository, 
             ITipoLugarRepository tipoLugarRepository,
             IPacienteRepository pacienteRepository,
-            IEmailService emailService)
+            IConfiguracionRepository configuracionRepository,
+            IEmailService emailService
+            )
         {
             this.servicioRepository = servicioRepository;
             this.horarioRepository = horarioRepository;
@@ -53,7 +71,9 @@ namespace enfermeria.api.Controllers
             this.tipoLugarRepository = tipoLugarRepository;
             this.pacienteRepository = pacienteRepository;
             this.emailService = emailService;
+            this.configuracionRepository = configuracionRepository;
             this.mapper = mapper;
+            this.stripePaymentService = new StripePaymentService("sk_test_51Qj6iqRskzWiZsX2j1arurF8bKGpmMTOfTcgrsV5i10BhW5gmEzwy3SPCTmfueEIjYqXxlXimCRQP3Fc13A1QMc500y1Ii9JOY");
         }
 
         [HttpPost("enviar-cotizacion/{id}")]
@@ -73,6 +93,15 @@ namespace enfermeria.api.Controllers
 
             if (servicio == null)
                 return NotFound("No se encontró la cotización.");
+
+            var link = await this.stripePaymentService.CreateCheckoutSessionAsync(
+            servicio.Total-servicio.Descuento,
+            $"Pago servicio { servicio.No.ToString() }",
+            "https://tusitio.com/pago-exitoso",
+            "https://tusitio.com/pago-cancelado",
+            servicio.Id.ToString()
+                );
+
 
             // 2. Generar PDF temporalmente
             var fileName = $"Cotizacion_{servicio.No}.pdf";
@@ -100,6 +129,29 @@ namespace enfermeria.api.Controllers
             };
 
             await emailService.SendEmailAsync(request);
+
+            return NoContent();
+        }
+        [HttpPost("aplicar-descuento/{id}")]
+        public async Task<IActionResult> AplicarDescuento(Guid id, [FromQuery] decimal monto)
+        {
+            // 1. Obtener la cotización con los includes necesarios
+            var servicio = await servicioRepository.GetByIdAsync(
+                id,
+                "Id",
+                "Estado",
+                "TipoLugar",
+                "TipoEnfermera",
+                "Paciente",
+                "ServicioFechas",
+                "ServicioFechas.ServicioCotizacions"
+            );
+
+            if (servicio == null)
+                return NotFound("No se encontró la cotización.");
+
+            servicio.Descuento = monto;
+            await this.servicioRepository.UpdateAsync( servicio );
 
             return NoContent();
         }
@@ -154,9 +206,13 @@ namespace enfermeria.api.Controllers
 
             try
             {
+                var configuraciones = await this.configuracionRepository.ListAsync();
+                var configuracion = configuraciones.Where(x => x.Id == 7).FirstOrDefault();
+
+
                 var servicio = mapper.Map<Servicio>(dto);
                 servicio.UsuarioCreacion = Guid.Parse(User.GetId());
-                servicio.Vigencia = DateTime.Now.AddDays(10).Date;
+                servicio.Vigencia = DateTime.Now.AddDays(configuracion.ValorEntero ?? 1).Date;
                 servicio.Lat = "";
                 servicio.Lon = "";
 
@@ -167,6 +223,8 @@ namespace enfermeria.api.Controllers
                 var tipoLugar_List = await this.tipoLugarRepository.ListAsync();
                 var tipoLugar = tipoLugar_List.Where(x=>x.Id == dto.tipoLugarId).FirstOrDefault();
                 var paciente = await this.pacienteRepository.GetByIdAsync(dto.pacienteId);
+                
+                
 
                 var serviciosCotizacion = new List<ServicioCotizacion>();
 
@@ -188,17 +246,17 @@ namespace enfermeria.api.Controllers
 
                
                 decimal cantidadHoras = 0;
-                foreach (var fecha in servicio.ServicioFechas)
+                foreach (var fecha in fechas)
                 {
-                    cantidadHoras = fecha.CantidadHoras + cantidadHoras;
                     fecha.UsuarioCreacion = Guid.Parse(User.GetId());
                 }
 
-                servicio.TotalHoras = cantidadHoras;
+                
 
                 //calculamos los horarios
                 var fechasHorarios = CalculoCotizacion.CalcularHorasPorTurnoPorFecha(horarios, fechas);
                 //colocamos los horarios para las fechas
+                decimal subTotalPropuesto = 0;
                 foreach(var item in fechasHorarios)
                 {
                     serviciosCotizacion = new List<ServicioCotizacion>();
@@ -222,41 +280,47 @@ namespace enfermeria.api.Controllers
                             UsuarioCreacion = Guid.Parse(User.GetId()),
                         };
 
-
+                        subTotalPropuesto = subTotalPropuesto + servicioCotizacion.PrecioFinal;
+                        cantidadHoras = cantidadHoras + servicioCotizacion.Horas;
                         serviciosCotizacion.Add(servicioCotizacion);
                     }
                     
                     fechas.Where(x=>x.FechaInicio.Date == item.Fecha).FirstOrDefault().ServicioCotizacions = serviciosCotizacion;
                 }
+                
                 // Devolver la respuesta con el nuevo paciente
                 servicio.ServicioFechas = fechas;
+                servicio.TotalHoras = cantidadHoras;
+                servicio.SubTotalPropuesto = subTotalPropuesto;
+                servicio.Impuestos = 0;
+                servicio.Descuento = 0;
+                servicio.CostoEstimadoHora = servicio.SubTotalPropuesto/servicio.TotalHoras;
+                servicio.Total = servicio.SubTotalPropuesto + servicio.Impuestos - servicio.Descuento;
+
                 var res = await servicioRepository.AddAsync(servicio);
 
                 // Establecer la respuesta de éxito
                 response.SetResponse(true, "Paciente creado correctamente.");
-
-                // Devolver la respuesta con el nuevo paciente
-
-                // Generar un nombre temporal para el PDF
-                servicio.Estado = new CatEstado() { Nombre = estado.nombre, NombreCorto = estado.nombreCorto, };
-                servicio.TipoEnfermera = new CatTipoEnfermera() { Descripcion = tipoEnfermera.descripcion, CostoHora = tipoEnfermera.costoHora , };
-                servicio.TipoLugar = tipoLugar;
-                servicio.Paciente = paciente;
-
-                var fileName = $"Cotizacion_{servicio.No.ToString()}.pdf";
-                var filePath = Path.Combine(Path.GetTempPath(), fileName);
-
-                // Generar el PDF
-                CotizacionPdfGenerator.GenerarPdf(servicio, filePath);
-
-                // Devolverlo como archivo descargable
-                var fileBytes = System.IO.File.ReadAllBytes(filePath);
-                //return File(fileBytes, "application/pdf", fileName);
                 return Ok(servicio.Id);
+                //// Devolver la respuesta con el nuevo paciente
 
+                //// Generar un nombre temporal para el PDF
+                //servicio.Estado = new CatEstado() { Nombre = estado.nombre, NombreCorto = estado.nombreCorto, };
+                //servicio.TipoEnfermera = new CatTipoEnfermera() { Descripcion = tipoEnfermera.descripcion, CostoHora = tipoEnfermera.costoHora , };
+                //servicio.TipoLugar = tipoLugar;
+                //servicio.Paciente = paciente;
 
-                return Ok(res);
-                return Ok();
+                //var fileName = $"Cotizacion_{servicio.No.ToString()}.pdf";
+                //var filePath = Path.Combine(Path.GetTempPath(), fileName);
+
+                //// Generar el PDF
+                //CotizacionPdfGenerator.GenerarPdf(servicio, filePath);
+
+                //// Devolverlo como archivo descargable
+                //var fileBytes = System.IO.File.ReadAllBytes(filePath);
+                ////return File(fileBytes, "application/pdf", fileName);
+               
+
             }
             catch (Exception ex)
             {
@@ -330,6 +394,53 @@ namespace enfermeria.api.Controllers
             }
 
 
+        }
+
+
+
+        //-----------Pagos confirmacion-------
+        // Endpoint para recibir los eventos del Webhook
+        [HttpPost("webhook")]
+        public async Task<IActionResult> Webhook()
+        {
+            var json = await new StreamReader(Request.Body).ReadToEndAsync();
+            Event stripeEvent;
+
+            try
+            {
+                // Verificar que la firma del webhook sea válida
+                stripeEvent = EventUtility.ConstructEvent(
+                    json, Request.Headers["Stripe-Signature"], _stripeWebhookSecret
+                );
+            }
+            catch (StripeException e)
+            {
+                return BadRequest($"Webhook Error: {e.Message}");
+            }
+
+            // Verificar el tipo de evento recibido
+            if (stripeEvent.Type == "checkout.session.completed")  // Usamos la cadena de texto directamente
+            {
+                var session = stripeEvent.Data.Object as Session;
+                if (session != null)
+                {
+                    // Aquí puedes actualizar el estado de la orden en la base de datos
+                    Guid orderId = Guid.Parse(session.ClientReferenceId);
+                    var paymentStatus = session.PaymentStatus;
+                    var paymentIntentId = session.PaymentIntentId;
+
+                    if (paymentStatus == "paid")
+                    {
+                        // Llamar a tu lógica de actualización de estado en la base de datos
+                        //await MarkServiceAsPaidAsync(orderId);
+                        var servicio = await this.servicioRepository.GetByIdAsync(orderId);
+                        servicio.ReferenciaPagoStripe = paymentIntentId;
+                        await this.servicioRepository.UpdateAsync(servicio);
+                    }
+                }
+            }
+
+            return Ok();  // Responder a Stripe que hemos recibido el webhook
         }
     }
 }

@@ -22,8 +22,10 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Openpay" Version="1.0.27" />
     <PackageReference Include="QuestPDF" Version="2025.4.0" />
-    <PackageReference Include="Stripe.net" Version="47.4.0" />
+    <PackageReference Include="Stripe.net" Version="48.0.2" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
