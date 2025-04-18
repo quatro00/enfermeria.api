@@ -50,7 +50,7 @@ namespace enfermeria.api.Controllers
         private readonly IEmailService emailService;
 
         private readonly StripePaymentService stripePaymentService;
-        private readonly string _stripeWebhookSecret = "whsec_XXXXXXXXXXXXXXXXXXXXX";
+        private readonly string _stripeWebhookSecret = "whsec_I3NrLFcnZtqBwtf2pDh1LWLHICg5p8aU";
 
         public ServicioController(
             IServicioRepository servicioRepository, 
