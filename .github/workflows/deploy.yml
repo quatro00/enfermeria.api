@@ -19,13 +19,13 @@ jobs:
         dotnet-version: '7.0.x' # Cambia si usas otra versión
 
     - name: Restore dependencies
-      run: dotnet restore ../enfermeria.api/enfermeria.api.csproj
+      run: dotnet restore ./enfermeria.api/enfermeria.api/enfermeria.api.csproj
 
     - name: Build
-      run: dotnet build ../enfermeria.api/enfermeria.api/enfermeria.api.csproj --configuration Release
+      run: dotnet build ./enfermeria.api/enfermeria.api/enfermeria.api.csproj --configuration Release
 
     - name: Publish
-      run: dotnet publish ../enfermeria.api/enfermeria.api/enfermeria.api.csproj -c Release -o ./publish
+      run: dotnet publish ./enfermeria.api/enfermeria.api/enfermeria.api.csproj -c Release -o ./publish
 
     - name: Deploy to FTP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4
