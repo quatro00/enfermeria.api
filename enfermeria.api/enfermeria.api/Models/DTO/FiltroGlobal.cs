@@ -7,5 +7,8 @@
         public string? CorreoElectronico { get; set; }
         public string? Telefono { get; set; }
         public string? TipoEnfermeraId { get; set; }
+        public Guid? EstadoId { get; set; }
+        public int? EstatusServicioId { get; set; }
+        public string? noServicio { get; set; }
     }
 }

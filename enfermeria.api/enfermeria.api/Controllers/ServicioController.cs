@@ -14,6 +14,9 @@ using DocumentFormat.OpenXml.Presentation;
 using enfermeria.api.Helpers.Cotizacion;
 using enfermeria.api.Models.DTO.TipoEnfermera;
 using enfermeria.api.Models.DTO.Estado;
+using enfermeria.api.Models.DTO.Colaborador;
+using enfermeria.api.Models.DTO;
+using enfermeria.api.Models.Specifications;
 
 namespace enfermeria.api.Controllers
 {
@@ -48,6 +51,7 @@ namespace enfermeria.api.Controllers
         }
 
         [HttpGet("ObtenerCotizacion/{id}")]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> ObtenerCotizacion(Guid id)
         {
             // 1. Obtener los datos de la cotización (reemplaza esto por tu lógica real)
@@ -213,6 +217,66 @@ namespace enfermeria.api.Controllers
                 response.Data = ex.Message; // Puedes agregar más detalles del error si lo deseas
                 return StatusCode(500, response); // O devolver un BadRequest(400) si el error es de entrada
             }
+        }
+        [HttpGet]
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> GetServicios([FromQuery] FilterGetServicio model)
+        {
+            
+            FiltroGlobal filtro = new FiltroGlobal()
+            {
+                noServicio = model.No,
+                Nombre = model.NombrePaciente,
+                EstadoId = model.Estado,
+                EstatusServicioId = model.Estatus,
+            };
+
+
+            //creamos la respuesta
+            var response = new ResponseModel_2<List<GetCotizacionResult>>();
+            if (User.IsInRole("Administrador"))
+            {
+                filtro.IncluirInactivos = true;
+            }
+
+            try
+            {
+                
+                //colocamos los filtros
+                var spec = new ServicioSpecification(filtro);
+
+                //colocamos los includes
+                spec.IncludeStrings = new List<string>
+                    {
+                         "Estado",
+                        "TipoLugar",
+                        "TipoEnfermera",
+                        "Paciente",
+                        "ServicioFechas",
+                        "ServicioFechas.ServicioCotizacions",
+                        "EstatusServicio"
+                    };
+                
+                //convertimos de la clase al dto
+                var pacientes = await this.servicioRepository.ListAsync(spec);
+                var pacientesDto = mapper.Map<List<GetCotizacionResult>>(pacientes);
+                
+                return Ok(pacientesDto);
+            }
+            catch (Exception ex)
+            {
+                // Si ocurre una excepción, manejar el error
+                response.SetResponse(false, "Ocurrió un error al crear el paciente.");
+
+                // Puedes registrar el error o manejarlo como desees, por ejemplo:
+                // Log.Error(ex, "Error al crear paciente");
+
+                // Devolver una respuesta con el error
+                response.Data = ex.Message; // Puedes agregar más detalles del error si lo deseas
+                return StatusCode(500, response); // O devolver un BadRequest(400) si el error es de entrada
+            }
+
+
         }
     }
 }

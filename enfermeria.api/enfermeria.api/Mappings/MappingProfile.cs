@@ -2,6 +2,7 @@
 {
     using AutoMapper;
     using enfermeria.api.Enums;
+    using enfermeria.api.Helpers.Cotizacion;
     using enfermeria.api.Models.Domain;
     using enfermeria.api.Models.DTO;
     using enfermeria.api.Models.DTO.Banco;
@@ -15,6 +16,20 @@
         public MappingProfile()
         {
             //mapeo creacion de servicio
+            CreateMap<Servicio, GetCotizacionResult>()
+               .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+               .ForMember(dest => dest.No, opt => opt.MapFrom(src => src.No))
+               .ForMember(dest => dest.Paciente, opt => opt.MapFrom(src => src.Paciente.Nombre + " " + src.Paciente.Apellidos))
+               .ForMember(dest => dest.Estado, opt => opt.MapFrom(src => src.Estado.Nombre))
+               .ForMember(dest => dest.Direccion, opt => opt.MapFrom(src => src.Direccion))
+               .ForMember(dest => dest.Motivo, opt => opt.MapFrom(src => src.PrincipalRazon))
+               .ForMember(dest => dest.TipoEnfermera, opt => opt.MapFrom(src => src.TipoEnfermera.Descripcion))
+               .ForMember(dest => dest.SubTotal, opt => opt.MapFrom(src => src.ServicioFechas.SelectMany(f=>f.ServicioCotizacions).Sum(x=>x.PrecioFinal)))
+               .ForMember(dest => dest.Descuento, opt => opt.MapFrom(src => src.Descuento))
+               .ForMember(dest => dest.Total, opt => opt.MapFrom(src => src.ServicioFechas.SelectMany(f => f.ServicioCotizacions).Sum(x => x.PrecioFinal) - src.Descuento))
+               .ForMember(dest => dest.Estatus, opt => opt.MapFrom(src => src.EstatusServicio.Descripcion))
+               .ForMember(dest => dest.Horas, opt => opt.MapFrom(src => src.ServicioFechas.Sum(x=>x.CantidadHoras)));
+
             CreateMap<CrearServicioDto, Servicio>()
                 .ForMember(dest => dest.Activo, opt => opt.MapFrom(src => true))
                 .ForMember(dest => dest.EstatusServicioId, opt => opt.MapFrom(src => 1))
