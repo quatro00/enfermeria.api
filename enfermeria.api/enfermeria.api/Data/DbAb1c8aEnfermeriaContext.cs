@@ -36,6 +36,8 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
 
     public virtual DbSet<CatEstatusServicio> CatEstatusServicios { get; set; }
 
+    public virtual DbSet<CatHorario> CatHorarios { get; set; }
+
     public virtual DbSet<CatTipoDocumento> CatTipoDocumentos { get; set; }
 
     public virtual DbSet<CatTipoEnfermera> CatTipoEnfermeras { get; set; }
@@ -57,6 +59,8 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
     public virtual DbSet<RelEstadoColaborador> RelEstadoColaboradors { get; set; }
 
     public virtual DbSet<Servicio> Servicios { get; set; }
+
+    public virtual DbSet<ServicioCotizacion> ServicioCotizacions { get; set; }
 
     public virtual DbSet<ServicioFecha> ServicioFechas { get; set; }
 
@@ -154,9 +158,16 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
             entity.ToTable("CatEstatusServicio");
 
             entity.Property(e => e.Id).ValueGeneratedNever();
-            entity.Property(e => e.Descripcion)
-                .HasMaxLength(10)
-                .IsFixedLength();
+            entity.Property(e => e.Descripcion).HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<CatHorario>(entity =>
+        {
+            entity.ToTable("CatHorario");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Descripcion).HasMaxLength(50);
+            entity.Property(e => e.PorcentajeTarifa).HasColumnType("decimal(18, 2)");
         });
 
         modelBuilder.Entity<CatTipoDocumento>(entity =>
@@ -345,7 +356,6 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
             entity.Property(e => e.Observaciones).HasMaxLength(500);
             entity.Property(e => e.PrincipalRazon).HasMaxLength(500);
             entity.Property(e => e.RequiereAtencionNeurologicaDesc).HasMaxLength(500);
-            entity.Property(e => e.RequiereAyudaBasica).HasMaxLength(500);
             entity.Property(e => e.RequiereAyudaBasicaDesc).HasMaxLength(500);
             entity.Property(e => e.RequiereCuidadosCriticosDesc).HasMaxLength(500);
             entity.Property(e => e.RequiereCuracionesDesc).HasMaxLength(500);
@@ -378,6 +388,25 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
                 .HasForeignKey(d => d.TipoLugarId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Servicio_CatTipoLugar");
+        });
+
+        modelBuilder.Entity<ServicioCotizacion>(entity =>
+        {
+            entity.ToTable("ServicioCotizacion");
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newsequentialid())");
+            entity.Property(e => e.FechaCreacion).HasColumnType("datetime");
+            entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
+            entity.Property(e => e.Horario).HasMaxLength(50);
+            entity.Property(e => e.Horas).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.PrecioFinal).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.PrecioHoraBase).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.PrecioHoraFinal).HasColumnType("decimal(18, 2)");
+
+            entity.HasOne(d => d.ServicioFechas).WithMany(p => p.ServicioCotizacions)
+                .HasForeignKey(d => d.ServicioFechasId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ServicioCotizacion_ServicioFechas");
         });
 
         modelBuilder.Entity<ServicioFecha>(entity =>

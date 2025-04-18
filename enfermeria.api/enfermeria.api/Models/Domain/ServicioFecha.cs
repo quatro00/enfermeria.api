@@ -26,4 +26,6 @@ public partial class ServicioFecha
     public string? UsuarioModificacion { get; set; }
 
     public virtual Servicio Servicio { get; set; } = null!;
+
+    public virtual ICollection<ServicioCotizacion> ServicioCotizacions { get; set; } = new List<ServicioCotizacion>();
 }

@@ -8,11 +8,27 @@
     using enfermeria.api.Models.DTO.Colaborador;
     using enfermeria.api.Models.DTO.Contacto;
     using enfermeria.api.Models.DTO.Paciente;
+    using enfermeria.api.Models.DTO.Servicio;
 
     public class MappingProfile : Profile
     {
         public MappingProfile()
         {
+            //mapeo creacion de servicio
+            CreateMap<CrearServicioDto, Servicio>()
+                .ForMember(dest => dest.Activo, opt => opt.MapFrom(src => true))
+                .ForMember(dest => dest.EstatusServicioId, opt => opt.MapFrom(src => 1))
+                .ForMember(dest => dest.FechaCreacion, opt => opt.MapFrom(src => DateTime.Now))
+                .ForMember(dest => dest.DispositivosMedicos, opt => opt.MapFrom(src => src.cuentaConDispositivosMedicos))
+                .ForMember(dest => dest.DispositivosMedicosDesc, opt => opt.MapFrom(src => src.cuentaConDispositivosMedicosDesc))
+                .ForMember(dest => dest.RequiereCuidadosCriticos, opt => opt.MapFrom(src => src.cuidadosCriticos))
+                .ForMember(dest => dest.RequiereCuidadosCriticosDesc, opt => opt.MapFrom(src => src.cuidadosCriticosDesc))
+                .ForMember(dest => dest.TomaMedicamento, opt => opt.MapFrom(src => src.tomaAlgunMedicamento))
+                .ForMember(dest => dest.TomaMedicamentoDesc, opt => opt.MapFrom(src => src.tomaAlgunMedicamentoDesc))
+                .ForMember(dest => dest.PrincipalRazon, opt => opt.MapFrom(src => src.motivo));
+            CreateMap<CrearServicioFechasFormatoDto, ServicioFecha>()
+                .ForMember(dest => dest.Activo, opt => opt.MapFrom(src => true))
+                .ForMember(dest => dest.FechaCreacion, opt => opt.MapFrom(src => DateTime.Now));
             //mapeo colaborador
             CreateMap<Colaborador, ColaboradorDto>()
                 .ForMember(dest => dest.Estatus, opt => opt.MapFrom(src => src.EstatusColaborador.Descripcion))

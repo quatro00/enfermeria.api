@@ -24,10 +24,23 @@ namespace enfermeria.api.Repositories.Implementation
             return await _dbSet.FindAsync(id);
         }
 
-        public async Task AddAsync(T entity)
+        public async Task<T?> GetByIdAsync(Guid id, string idFieldName, params string[] includePaths)
+        {
+            IQueryable<T> query = _context.Set<T>();
+
+            foreach (var include in includePaths)
+            {
+                query = query.Include(include);
+            }
+
+            return await query.FirstOrDefaultAsync(e => EF.Property<Guid>(e, idFieldName) == id);
+        }
+
+        public async Task<T> AddAsync(T entity)
         {
             await _dbSet.AddAsync(entity);
             await _context.SaveChangesAsync();
+            return entity;
         }
 
         public async Task UpdateAsync(T entity)

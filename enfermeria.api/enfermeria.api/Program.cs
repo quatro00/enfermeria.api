@@ -8,8 +8,12 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using QuestPDF.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Activar licencia gratuita
+QuestPDF.Settings.License = LicenseType.Community;
 
 // Add services to the container.
 
@@ -72,6 +76,8 @@ builder.Services.AddScoped<IColaboradorRepository, ColaboradorRepository>();
 builder.Services.AddScoped<IBancoRepository, BancoRepository>();
 builder.Services.AddScoped<IColaboradorDocumentoRepository, ColaboradorDocumentoRepository>();
 builder.Services.AddScoped<ITipoLugarRepository, TipoLugarRepository>();
+builder.Services.AddScoped<IServicioRepository, ServicioRepository>();
+builder.Services.AddScoped<IHorarioRepository, HorarioRepository>();
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 

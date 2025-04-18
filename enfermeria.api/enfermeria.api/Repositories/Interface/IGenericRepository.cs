@@ -7,8 +7,9 @@ namespace enfermeria.api.Repositories.Interface
     public interface IGenericRepository<T> where T : class
     {
         Task<T?> GetByIdAsync(Guid id);
+        Task<T?> GetByIdAsync(Guid id, string idFieldName, params string[] includePaths);
 
-        Task AddAsync(T entity);
+        Task<T> AddAsync(T entity);
 
         Task UpdateAsync(T entity);
 

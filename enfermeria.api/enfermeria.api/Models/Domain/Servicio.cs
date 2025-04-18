@@ -25,11 +25,11 @@ public partial class Servicio
 
     public string PrincipalRazon { get; set; } = null!;
 
-    public string RequiereAyudaBasica { get; set; } = null!;
+    public bool RequiereAyudaBasica { get; set; }
 
     public string RequiereAyudaBasicaDesc { get; set; } = null!;
 
-    public bool EnfermedadDiagnosticiada { get; set; }
+    public bool EnfermedadDiagnosticada { get; set; }
 
     public string EnfermedadDiagnosticadaDesc { get; set; } = null!;
 
