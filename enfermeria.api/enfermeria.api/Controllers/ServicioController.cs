@@ -409,13 +409,27 @@ namespace enfermeria.api.Controllers
             try
             {
                 // Verificar que la firma del webhook sea válida
+                // El encabezado Stripe-Signature debe estar presente y el webhook secreto es necesario para la validación
+                var signature = Request.Headers["Stripe-Signature"];
+                if (string.IsNullOrEmpty(signature))
+                {
+                    return BadRequest("Stripe-Signature header is missing.");
+                }
+
+                // Verificar la firma utilizando el secreto del webhook
                 stripeEvent = EventUtility.ConstructEvent(
-                    json, Request.Headers["Stripe-Signature"], _stripeWebhookSecret
+                    json, signature, _stripeWebhookSecret
                 );
             }
             catch (StripeException e)
             {
+                // Respuesta si la firma no es válida o si hubo un error en el procesamiento del evento
                 return BadRequest($"Webhook Error: {e.Message}");
+            }
+            catch (Exception ex)
+            {
+                // Manejo de otros errores generales
+                return StatusCode(500, $"Error: {ex.Message}");
             }
 
             // Verificar el tipo de evento recibido
@@ -425,22 +439,54 @@ namespace enfermeria.api.Controllers
                 if (session != null)
                 {
                     // Aquí puedes actualizar el estado de la orden en la base de datos
-                    Guid orderId = Guid.Parse(session.ClientReferenceId);
-                    var paymentStatus = session.PaymentStatus;
-                    var paymentIntentId = session.PaymentIntentId;
-
-                    if (paymentStatus == "paid")
+                    Guid orderId;
+                    if (Guid.TryParse(session.ClientReferenceId, out orderId))
                     {
-                        // Llamar a tu lógica de actualización de estado en la base de datos
-                        //await MarkServiceAsPaidAsync(orderId);
-                        var servicio = await this.servicioRepository.GetByIdAsync(orderId);
-                        servicio.ReferenciaPagoStripe = paymentIntentId;
-                        await this.servicioRepository.UpdateAsync(servicio);
+                        var paymentStatus = session.PaymentStatus;
+                        var paymentIntentId = session.PaymentIntentId;
+
+                        // Verificar si el pago fue exitoso
+                        if (paymentStatus == "paid")
+                        {
+                            // Llamar a tu lógica de actualización de estado en la base de datos
+                            var servicio = await this.servicioRepository.GetByIdAsync(orderId);
+                            if (servicio != null)
+                            {
+                                servicio.ReferenciaPagoStripe = paymentIntentId;
+                                await this.servicioRepository.UpdateAsync(servicio);
+                            }
+                            else
+                            {
+                                // Si no se encuentra el servicio en la base de datos
+                                return NotFound($"Service with ID {orderId} not found.");
+                            }
+                        }
+                        else
+                        {
+                            // Si el pago no fue exitoso, puedes registrar un estado alternativo o enviar un mensaje de error
+                            return BadRequest("Payment was not successful.");
+                        }
+                    }
+                    else
+                    {
+                        // Si el ClientReferenceId no es un GUID válido
+                        return BadRequest("Invalid ClientReferenceId.");
                     }
                 }
+                else
+                {
+                    // Si el objeto session no es válido
+                    return BadRequest("Invalid session object.");
+                }
+            }
+            else
+            {
+                // Si el tipo de evento no es 'checkout.session.completed', puedes retornar un error o simplemente omitirlo
+                return BadRequest($"Unhandled event type: {stripeEvent.Type}");
             }
 
-            return Ok();  // Responder a Stripe que hemos recibido el webhook
+            return Ok();  // Responder a Stripe que hemos recibido el webhook correctamente
         }
+
     }
 }
