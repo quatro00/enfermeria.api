@@ -121,14 +121,14 @@ namespace enfermeria.api.Controllers
             var request = new EmailRequest
             {
                 ToMultiple = destinatarios,
-                To = "josecarlosgarciadiaz@gmail.com",//servicio.Paciente.CorreoElectronico,
+                //To = correoAdicional,
                 Subject = $"Cotización de servicio #{servicio.No}",
                 Body = "<p>Adjuntamos su cotización de servicio de enfermería.</p>",
                 Attachments = new List<Attachment> { attachment },
                 
             };
 
-            await emailService.SendEmailAsync(request);
+            await emailService.SendEmailAsync(request, link);
 
             return NoContent();
         }
@@ -395,9 +395,6 @@ namespace enfermeria.api.Controllers
 
 
         }
-
-
-
         //-----------Pagos confirmacion-------
         // Endpoint para recibir los eventos del Webhook
         [HttpPost("webhook")]

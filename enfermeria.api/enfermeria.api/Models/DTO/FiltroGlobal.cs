@@ -10,5 +10,6 @@
         public Guid? EstadoId { get; set; }
         public int? EstatusServicioId { get; set; }
         public string? noServicio { get; set; }
+        public Guid? ServicioId { get; set; }
     }
 }

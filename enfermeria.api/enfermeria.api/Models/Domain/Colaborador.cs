@@ -43,7 +43,9 @@ public partial class Colaborador
 
     public Guid TipoEnfermeraId { get; set; }
 
-    public bool? CuentaCreada { get; set; }
+    public bool CuentaCreada { get; set; }
+
+    public decimal Comision { get; set; }
 
     public bool Activo { get; set; }
 
@@ -62,6 +64,8 @@ public partial class Colaborador
     public virtual EstatusColaborador EstatusColaborador { get; set; } = null!;
 
     public virtual ICollection<RelEstadoColaborador> RelEstadoColaboradors { get; set; } = new List<RelEstadoColaborador>();
+
+    public virtual ICollection<ServicioFechasOfertum> ServicioFechasOferta { get; set; } = new List<ServicioFechasOfertum>();
 
     public virtual CatTipoEnfermera TipoEnfermera { get; set; } = null!;
 }

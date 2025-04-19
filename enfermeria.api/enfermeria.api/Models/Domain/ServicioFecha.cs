@@ -28,4 +28,6 @@ public partial class ServicioFecha
     public virtual Servicio Servicio { get; set; } = null!;
 
     public virtual ICollection<ServicioCotizacion> ServicioCotizacions { get; set; } = new List<ServicioCotizacion>();
+
+    public virtual ICollection<ServicioFechasOfertum> ServicioFechasOferta { get; set; } = new List<ServicioFechasOfertum>();
 }

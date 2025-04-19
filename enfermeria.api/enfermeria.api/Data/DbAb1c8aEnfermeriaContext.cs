@@ -38,6 +38,8 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
 
     public virtual DbSet<CatHorario> CatHorarios { get; set; }
 
+    public virtual DbSet<CatServicioFechasOfertaEstatus> CatServicioFechasOfertaEstatuses { get; set; }
+
     public virtual DbSet<CatTipoDocumento> CatTipoDocumentos { get; set; }
 
     public virtual DbSet<CatTipoEnfermera> CatTipoEnfermeras { get; set; }
@@ -63,6 +65,8 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
     public virtual DbSet<ServicioCotizacion> ServicioCotizacions { get; set; }
 
     public virtual DbSet<ServicioFecha> ServicioFechas { get; set; }
+
+    public virtual DbSet<ServicioFechasOfertum> ServicioFechasOferta { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
@@ -170,6 +174,16 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
             entity.Property(e => e.PorcentajeTarifa).HasColumnType("decimal(18, 2)");
         });
 
+        modelBuilder.Entity<CatServicioFechasOfertaEstatus>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_ServicioOfertaEstatus");
+
+            entity.ToTable("CatServicioFechasOfertaEstatus");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Descripcion).HasMaxLength(50);
+        });
+
         modelBuilder.Entity<CatTipoDocumento>(entity =>
         {
             entity.ToTable("CatTipoDocumento");
@@ -207,6 +221,7 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
             entity.Property(e => e.CedulaProfesional).HasMaxLength(500);
             entity.Property(e => e.Clabe).HasMaxLength(50);
             entity.Property(e => e.Colonia).HasMaxLength(500);
+            entity.Property(e => e.Comision).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.CorreoElectronico).HasMaxLength(500);
             entity.Property(e => e.Cp).HasMaxLength(50);
             entity.Property(e => e.Cuenta).HasMaxLength(50);
@@ -428,6 +443,33 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
                 .HasForeignKey(d => d.ServicioId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_ServicioFechas_Servicio");
+        });
+
+        modelBuilder.Entity<ServicioFechasOfertum>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_ServicioOferta");
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newsequentialid())");
+            entity.Property(e => e.Comentario).HasMaxLength(500);
+            entity.Property(e => e.FechaCreacion).HasColumnType("datetime");
+            entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
+            entity.Property(e => e.MontoSolicitado).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+
+            entity.HasOne(d => d.Colaborador).WithMany(p => p.ServicioFechasOferta)
+                .HasForeignKey(d => d.ColaboradorId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ServicioOferta_Colaborador");
+
+            entity.HasOne(d => d.EstatusOferta).WithMany(p => p.ServicioFechasOferta)
+                .HasForeignKey(d => d.EstatusOfertaId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ServicioOferta_ServicioOfertaEstatus");
+
+            entity.HasOne(d => d.ServicioFecha).WithMany(p => p.ServicioFechasOferta)
+                .HasForeignKey(d => d.ServicioFechaId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ServicioFechasOferta_ServicioFechas");
         });
 
         OnModelCreatingPartial(modelBuilder);

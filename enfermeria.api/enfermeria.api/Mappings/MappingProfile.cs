@@ -15,6 +15,23 @@
     {
         public MappingProfile()
         {
+            //CreateMap<ServicioOfertum, GetServicioOfertaRequest>()
+            //    .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+            //    .ForMember(dest => dest.Colaborador, opt => opt.MapFrom(src => $"{src.Colaborador.Nombre} {src.Colaborador.Apellidos}"))
+            //    .ForMember(dest => dest.Telefono, opt => opt.MapFrom(src => src.Colaborador.Telefono))
+            //    .ForMember(dest => dest.Descuento, opt => opt.MapFrom(src => src.Servicio.Descuento))
+            //    .ForMember(dest => dest.CorreoElectronico, opt => opt.MapFrom(src => src.Colaborador.CorreoElectronico))
+            //    .ForMember(dest => dest.TipoEnfermero, opt => opt.MapFrom(src => src.Colaborador.TipoEnfermera.Descripcion))
+            //    .ForMember(dest => dest.Comentario, opt => opt.MapFrom(src => src.Comentario))
+            //    .ForMember(dest => dest.MontoSolicitado, opt => opt.MapFrom(src => src.MontoSolicitado))
+            //    .ForMember(dest => dest.Total, opt => opt.MapFrom(src => src.Servicio.Total))
+            //    .ForMember(dest => dest.MontoCobrado, opt => opt.MapFrom(src => src.Servicio.Total - src.Servicio.Descuento + src.Servicio.Impuestos))
+            //    .ForMember(dest => dest.Beneficio, opt => opt.MapFrom(src => src.Servicio.Total - src.Servicio.Descuento + src.Servicio.Impuestos - src.MontoSolicitado))
+            //    .ForMember(dest => dest.Comision, opt => opt.MapFrom(src => (src.MontoSolicitado) * (src.Colaborador.Comision/100)))
+            //    .ForMember(dest => dest.BeneficioTotal, opt => opt.MapFrom(src => (src.Servicio.Total - src.Servicio.Descuento + src.Servicio.Impuestos - src.MontoSolicitado) +  ((src.MontoSolicitado) * (src.Colaborador.Comision / 100))  ))
+            //    .ForMember(dest => dest.Fecha, opt => opt.MapFrom(src => src.FechaCreacion))
+            //    ;
+
             //mapeo creacion de servicio
             CreateMap<Servicio, GetCotizacionResult>()
                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))

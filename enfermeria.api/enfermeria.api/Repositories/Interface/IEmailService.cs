@@ -4,6 +4,6 @@ namespace enfermeria.api.Repositories.Interface
 {
     public interface IEmailService
     {
-        Task SendEmailAsync(EmailRequest request);
+        Task SendEmailAsync(EmailRequest request, string paymentUrl);
     }
 }
