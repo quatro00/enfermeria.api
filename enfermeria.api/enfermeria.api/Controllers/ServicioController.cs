@@ -418,7 +418,10 @@ namespace enfermeria.api.Controllers
 
                 // Verificar la firma utilizando el secreto del webhook
                 stripeEvent = EventUtility.ConstructEvent(
-                    json, signature, _stripeWebhookSecret
+                    json, 
+                    signature, 
+                    _stripeWebhookSecret,
+                     throwOnApiVersionMismatch: false
                 );
             }
             catch (StripeException e)
