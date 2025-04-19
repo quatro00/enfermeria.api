@@ -456,6 +456,7 @@ namespace enfermeria.api.Controllers
                             if (servicio != null)
                             {
                                 servicio.ReferenciaPagoStripe = paymentIntentId;
+                                servicio.EstatusServicioId = 2;
                                 await this.servicioRepository.UpdateAsync(servicio);
                             }
                             else
