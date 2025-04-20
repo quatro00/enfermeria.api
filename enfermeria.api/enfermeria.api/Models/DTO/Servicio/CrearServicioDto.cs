@@ -47,5 +47,9 @@
         public DateTime fechaInicio { get; set; }
         public DateTime fechaTermino { get; set; }
         public decimal cantidadHoras { get; set; }
+        public decimal precioHora { get; set; }
+        public decimal subTotal {  get; set; }
+        public decimal descuentos { get; set; }
+        public decimal total { get; set; }
     }
 }

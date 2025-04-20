@@ -65,6 +65,8 @@ public partial class Colaborador
 
     public virtual ICollection<RelEstadoColaborador> RelEstadoColaboradors { get; set; } = new List<RelEstadoColaborador>();
 
+    public virtual ICollection<ServicioFecha> ServicioFechas { get; set; } = new List<ServicioFecha>();
+
     public virtual ICollection<ServicioFechasOfertum> ServicioFechasOferta { get; set; } = new List<ServicioFechasOfertum>();
 
     public virtual CatTipoEnfermera TipoEnfermera { get; set; } = null!;

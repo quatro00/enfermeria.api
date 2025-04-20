@@ -11,5 +11,8 @@
         public int? EstatusServicioId { get; set; }
         public string? noServicio { get; set; }
         public Guid? ServicioId { get; set; }
+        public Guid? ServicioFechaId { get; set; }
+        public int? EstatusOfertaId { get; set; }
+        public int? EstatusServicioFechaId { get; set; }
     }
 }

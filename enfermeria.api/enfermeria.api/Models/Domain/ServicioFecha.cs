@@ -9,9 +9,13 @@ public partial class ServicioFecha
 
     public Guid ServicioId { get; set; }
 
+    public Guid? ColaboradorAsignadoId { get; set; }
+
     public DateTime FechaInicio { get; set; }
 
     public DateTime FechaTermino { get; set; }
+
+    public int EstatusServicioFechaId { get; set; }
 
     public decimal CantidadHoras { get; set; }
 
@@ -24,6 +28,10 @@ public partial class ServicioFecha
     public DateTime? FechaModificacion { get; set; }
 
     public string? UsuarioModificacion { get; set; }
+
+    public virtual Colaborador? ColaboradorAsignado { get; set; }
+
+    public virtual CatEstatusServicioFecha EstatusServicioFecha { get; set; } = null!;
 
     public virtual Servicio Servicio { get; set; } = null!;
 

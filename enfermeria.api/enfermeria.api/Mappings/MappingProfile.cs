@@ -4,33 +4,36 @@
     using enfermeria.api.Enums;
     using enfermeria.api.Helpers.Cotizacion;
     using enfermeria.api.Models.Domain;
-    using enfermeria.api.Models.DTO;
     using enfermeria.api.Models.DTO.Banco;
     using enfermeria.api.Models.DTO.Colaborador;
     using enfermeria.api.Models.DTO.Contacto;
     using enfermeria.api.Models.DTO.Paciente;
     using enfermeria.api.Models.DTO.Servicio;
+    using enfermeria.api.Models.DTO.ServicioFecha;
+    using enfermeria.api.Models.DTO.ServicioFechaOferta;
 
     public class MappingProfile : Profile
     {
         public MappingProfile()
         {
-            //CreateMap<ServicioOfertum, GetServicioOfertaRequest>()
-            //    .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-            //    .ForMember(dest => dest.Colaborador, opt => opt.MapFrom(src => $"{src.Colaborador.Nombre} {src.Colaborador.Apellidos}"))
-            //    .ForMember(dest => dest.Telefono, opt => opt.MapFrom(src => src.Colaborador.Telefono))
-            //    .ForMember(dest => dest.Descuento, opt => opt.MapFrom(src => src.Servicio.Descuento))
-            //    .ForMember(dest => dest.CorreoElectronico, opt => opt.MapFrom(src => src.Colaborador.CorreoElectronico))
-            //    .ForMember(dest => dest.TipoEnfermero, opt => opt.MapFrom(src => src.Colaborador.TipoEnfermera.Descripcion))
-            //    .ForMember(dest => dest.Comentario, opt => opt.MapFrom(src => src.Comentario))
-            //    .ForMember(dest => dest.MontoSolicitado, opt => opt.MapFrom(src => src.MontoSolicitado))
-            //    .ForMember(dest => dest.Total, opt => opt.MapFrom(src => src.Servicio.Total))
-            //    .ForMember(dest => dest.MontoCobrado, opt => opt.MapFrom(src => src.Servicio.Total - src.Servicio.Descuento + src.Servicio.Impuestos))
-            //    .ForMember(dest => dest.Beneficio, opt => opt.MapFrom(src => src.Servicio.Total - src.Servicio.Descuento + src.Servicio.Impuestos - src.MontoSolicitado))
-            //    .ForMember(dest => dest.Comision, opt => opt.MapFrom(src => (src.MontoSolicitado) * (src.Colaborador.Comision/100)))
-            //    .ForMember(dest => dest.BeneficioTotal, opt => opt.MapFrom(src => (src.Servicio.Total - src.Servicio.Descuento + src.Servicio.Impuestos - src.MontoSolicitado) +  ((src.MontoSolicitado) * (src.Colaborador.Comision / 100))  ))
-            //    .ForMember(dest => dest.Fecha, opt => opt.MapFrom(src => src.FechaCreacion))
-            //    ;
+            CreateMap<ServicioFechasOfertum, GetServicioFechaOfertaDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Colaborador, opt => opt.MapFrom(src => $"{src.Colaborador.Nombre} {src.Colaborador.Apellidos}"))
+                .ForMember(dest => dest.FechaInicio, opt => opt.MapFrom(src => src.ServicioFecha.FechaInicio))
+                .ForMember(dest => dest.FechaTermino, opt => opt.MapFrom(src => src.ServicioFecha.FechaTermino))
+                .ForMember(dest => dest.Telefono, opt => opt.MapFrom(src => src.Colaborador.Telefono))
+                .ForMember(dest => dest.Correo, opt => opt.MapFrom(src => src.Colaborador.CorreoElectronico))
+                .ForMember(dest => dest.Tipo, opt => opt.MapFrom(src => src.Colaborador.TipoEnfermera.Descripcion))
+                .ForMember(dest => dest.Comentario, opt => opt.MapFrom(src => src.Comentario))
+                .ForMember(dest => dest.Monto, opt => opt.MapFrom(src => src.MontoSolicitado))
+                .ForMember(dest => dest.Fecha, opt => opt.MapFrom(src => src.FechaCreacion))
+                ;
+
+            CreateMap<ServicioFecha, ServicioFechaDto>()
+                .ForMember(dest => dest.EstatusServicioFecha, opt => opt.MapFrom(src => src.EstatusServicioFecha.Descripcion))
+                .ForMember(dest => dest.Ofertas, opt => opt.MapFrom(src => src.ServicioFechasOferta.Where(x=>x.Activo).Count()))
+                .ForMember(dest => dest.No, opt => opt.MapFrom(src => src.Servicio.No))
+                ;
 
             //mapeo creacion de servicio
             CreateMap<Servicio, GetCotizacionResult>()

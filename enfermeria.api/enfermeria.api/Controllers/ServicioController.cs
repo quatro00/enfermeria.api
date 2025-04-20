@@ -32,6 +32,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.IO;
 using System.Threading.Tasks;
 using Stripe.Checkout;
+using enfermeria.api.Models.DTO.ServicioFecha;
 
 namespace enfermeria.api.Controllers
 {
@@ -237,7 +238,11 @@ namespace enfermeria.api.Controllers
                 {
                     fechaInicio = DateTime.Parse($"{e.fecha}T{e.inicio}"),
                     fechaTermino = DateTime.Parse($"{e.fecha}T{e.termino}"),
-                    cantidadHoras = e.horas
+                    cantidadHoras = e.horas,
+                    precioHora = tipoEnfermera.costoHora,
+                    descuentos = 0,
+                    subTotal = tipoEnfermera.costoHora * e.horas,
+                    total = tipoEnfermera.costoHora * e.horas,
                 }).ToList();
 
                 //mapeamos las fechas

@@ -86,6 +86,8 @@ builder.Services.AddScoped<ITipoLugarRepository, TipoLugarRepository>();
 builder.Services.AddScoped<IServicioRepository, ServicioRepository>();
 builder.Services.AddScoped<IHorarioRepository, HorarioRepository>();
 builder.Services.AddScoped<IConfiguracionRepository, ConfiguracionRepository>();
+builder.Services.AddScoped<IServicioFechaRepository, ServicioFechaRepository>();
+builder.Services.AddScoped<IServicioFechasOfertaRepository, ServicioFechasOfertaRepository>();
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 

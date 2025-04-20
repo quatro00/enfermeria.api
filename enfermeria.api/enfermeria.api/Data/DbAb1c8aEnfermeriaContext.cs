@@ -36,6 +36,8 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
 
     public virtual DbSet<CatEstatusServicio> CatEstatusServicios { get; set; }
 
+    public virtual DbSet<CatEstatusServicioFecha> CatEstatusServicioFechas { get; set; }
+
     public virtual DbSet<CatHorario> CatHorarios { get; set; }
 
     public virtual DbSet<CatServicioFechasOfertaEstatus> CatServicioFechasOfertaEstatuses { get; set; }
@@ -160,6 +162,14 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
             entity.HasKey(e => e.Id).HasName("PK_CatEstatusSolicitud");
 
             entity.ToTable("CatEstatusServicio");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Descripcion).HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<CatEstatusServicioFecha>(entity =>
+        {
+            entity.ToTable("CatEstatusServicioFecha");
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Descripcion).HasMaxLength(50);
@@ -438,6 +448,15 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
             entity.Property(e => e.UsuarioModificacion)
                 .HasMaxLength(10)
                 .IsFixedLength();
+
+            entity.HasOne(d => d.ColaboradorAsignado).WithMany(p => p.ServicioFechas)
+                .HasForeignKey(d => d.ColaboradorAsignadoId)
+                .HasConstraintName("FK_ServicioFechas_Colaborador");
+
+            entity.HasOne(d => d.EstatusServicioFecha).WithMany(p => p.ServicioFechas)
+                .HasForeignKey(d => d.EstatusServicioFechaId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ServicioFechas_CatEstatusServicioFecha");
 
             entity.HasOne(d => d.Servicio).WithMany(p => p.ServicioFechas)
                 .HasForeignKey(d => d.ServicioId)
