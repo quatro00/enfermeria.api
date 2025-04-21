@@ -14,5 +14,9 @@
         public Guid? ServicioFechaId { get; set; }
         public int? EstatusOfertaId { get; set; }
         public int? EstatusServicioFechaId { get; set; }
+
+        public int? NoServicio { get; set; }
+        public DateTime? FechaInicio { get; set; }
+        public DateTime? FechaFin { get; set; }
     }
 }

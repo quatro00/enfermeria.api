@@ -16,6 +16,19 @@
     {
         public MappingProfile()
         {
+            CreateMap<ServicioFecha, GetGuardiasDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.NoServicio, opt => opt.MapFrom(src => src.Servicio.No))
+                .ForMember(dest => dest.Colaborador, opt => opt.MapFrom(src =>
+                    src.ColaboradorAsignado != null
+                        ? src.ColaboradorAsignado.Nombre + " " + src.ColaboradorAsignado.Apellidos
+                        : string.Empty))
+                .ForMember(dest => dest.FechaInicio, opt => opt.MapFrom(src => src.FechaInicio))
+                .ForMember(dest => dest.FechaFin, opt => opt.MapFrom(src => src.FechaTermino))
+                .ForMember(dest => dest.EstatusServicioFecha, opt => opt.MapFrom(src => src.EstatusServicioFecha.Descripcion))
+                .ForMember(dest => dest.CantidadHoras, opt => opt.MapFrom(src => src.CantidadHoras))
+                ;
+
             CreateMap<ServicioFechasOfertum, GetServicioFechaOfertaDto>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.Colaborador, opt => opt.MapFrom(src => $"{src.Colaborador.Nombre} {src.Colaborador.Apellidos}"))
@@ -48,7 +61,10 @@
                .ForMember(dest => dest.Descuento, opt => opt.MapFrom(src => src.Descuento))
                .ForMember(dest => dest.Total, opt => opt.MapFrom(src => src.ServicioFechas.SelectMany(f => f.ServicioCotizacions).Sum(x => x.PrecioFinal) - src.Descuento))
                .ForMember(dest => dest.Estatus, opt => opt.MapFrom(src => src.EstatusServicio.Descripcion))
-               .ForMember(dest => dest.Horas, opt => opt.MapFrom(src => src.ServicioFechas.Sum(x=>x.CantidadHoras)));
+               .ForMember(dest => dest.Horas, opt => opt.MapFrom(src => src.ServicioFechas.Sum(x=>x.CantidadHoras)))
+               .ForMember(dest => dest.GuardiasAsignadas, opt => opt.MapFrom(src => src.ServicioFechas.Where(x => x.ColaboradorAsignadoId != null).Count()))
+               .ForMember(dest => dest.GuardiasPorAsignar, opt => opt.MapFrom(src => src.ServicioFechas.Where(x => x.ColaboradorAsignadoId == null).Count()))
+               ;
 
             CreateMap<CrearServicioDto, Servicio>()
                 .ForMember(dest => dest.Activo, opt => opt.MapFrom(src => true))

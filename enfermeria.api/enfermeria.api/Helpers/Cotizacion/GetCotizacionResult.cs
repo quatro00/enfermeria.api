@@ -14,5 +14,7 @@
         public decimal Descuento { get; set; }
         public decimal Total { get; set; }
         public string Estatus { get; set; }
+        public int GuardiasPorAsignar { get; set; }
+        public int GuardiasAsignadas { get; set; }
     }
 }

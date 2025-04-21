@@ -15,7 +15,11 @@ namespace enfermeria.api.Models.Specifications
             Criteria = p =>
                 (filtro.IncluirInactivos || p.Activo) &&
                 (filtro.ServicioId == null || p.ServicioId == filtro.ServicioId) &&
-                (filtro.EstatusServicioFechaId == null || p.EstatusServicioFechaId == filtro.EstatusServicioFechaId);
+                (filtro.EstatusServicioFechaId == null || p.EstatusServicioFechaId == filtro.EstatusServicioFechaId) &&
+                (filtro.noServicio == null || p.Servicio.No.ToString().ToUpper() == filtro.noServicio) &&
+                (filtro.FechaInicio == null || p.FechaInicio >= filtro.FechaInicio) &&
+                (filtro.FechaFin == null || p.FechaTermino <= filtro.FechaFin.Value.AddDays(1))
+                ;
         }
     }
 }
