@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using enfermeria.api.Models.DTO.ServicioFecha;
+using enfermeria.api.Enums;
 
 namespace enfermeria.api.Controllers
 {
@@ -18,11 +19,13 @@ namespace enfermeria.api.Controllers
     {
         private readonly IMapper mapper;
         private readonly IServicioFechaRepository servicioFechaRepository;
+        private readonly IColaboradorRepository colaboradorRepository;
         private readonly IServicioFechasOfertaRepository servicioFechasOfertaRepository;
 
-        public ServicioFechaController(IServicioFechaRepository servicioFechaRepository, IServicioFechasOfertaRepository servicioFechasOfertaRepository, IMapper mapper)
+        public ServicioFechaController(IServicioFechaRepository servicioFechaRepository, IServicioFechasOfertaRepository servicioFechasOfertaRepository, IColaboradorRepository colaboradorRepository, IMapper mapper)
         {
             this.servicioFechasOfertaRepository = servicioFechasOfertaRepository;
+            this.colaboradorRepository = colaboradorRepository;
             this.servicioFechaRepository = servicioFechaRepository;
             this.mapper = mapper;
         }
@@ -54,6 +57,63 @@ namespace enfermeria.api.Controllers
                 //convertimos de la clase al dto
                 var result = await this.servicioFechaRepository.ListAsync(spec);
                 var resultDto = mapper.Map<List<ServicioFechaDto>>(result);
+
+                //seteamos el resultado
+                response.SetResponse(true, "");
+                response.Result = resultDto;
+
+                return Ok(resultDto);
+            }
+            catch (Exception ex)
+            {
+                // Si ocurre una excepción, manejar el error
+                response.SetResponse(false, "Ocurrió un error al crear el paciente.");
+
+                // Puedes registrar el error o manejarlo como desees, por ejemplo:
+                // Log.Error(ex, "Error al crear paciente");
+
+                // Devolver una respuesta con el error
+                response.Data = ex.Message; // Puedes agregar más detalles del error si lo deseas
+                return StatusCode(500, response); // O devolver un BadRequest(400) si el error es de entrada
+            }
+
+
+        }
+        [HttpGet("obtener-guardias-fechas")]
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> GetServicioFechaFiltros([FromQuery] GetServicioFechaFiltrosDto model)
+        {
+
+            //creamos la respuesta
+            var response = new ResponseModel_2<List<GetServicioFechaFiltrosResponse>>();
+            try
+            {
+                Guid? id = null;
+
+                if (model.ColaboradorAsignadoId != null)
+                {
+                    var colaboradores = await this.colaboradorRepository.ListAsync();
+                    var colaborador = colaboradores.Where(x => x.No == model.ColaboradorAsignadoId).FirstOrDefault();
+                    id = colaborador.Id;
+                }
+
+                FiltroGlobal filtro = new FiltroGlobal()
+                {
+                    ColaboradorAsignadoId = id,
+                    EstatusServicioFechaId =(int)EstatusServicioFechaEnum.Completada,// model.EstatusServicioFechaId,
+                    FechaInicio = model.Inicio,
+                    FechaFin = model.Fin
+                };
+                filtro.IncluirInactivos = false;
+
+                var spec = new ServicioFechasSpecification(filtro);
+
+                //colocamos los includes
+                spec.IncludeStrings = new List<string> { "EstatusServicioFecha", "ServicioFechasOferta", "Servicio", "ColaboradorAsignado" };
+
+                //convertimos de la clase al dto
+                var result = await this.servicioFechaRepository.ListAsync(spec);
+                var resultDto = mapper.Map<List<GetServicioFechaFiltrosResponse>>(result);
 
                 //seteamos el resultado
                 response.SetResponse(true, "");

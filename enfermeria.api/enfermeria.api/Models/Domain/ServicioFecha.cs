@@ -19,6 +19,18 @@ public partial class ServicioFecha
 
     public decimal CantidadHoras { get; set; }
 
+    public decimal ImporteBruto { get; set; }
+
+    public decimal ImporteSolicitado { get; set; }
+
+    public decimal Comision { get; set; }
+
+    public decimal CostosOperativos { get; set; }
+
+    public decimal Retenciones { get; set; }
+
+    public decimal Total { get; set; }
+
     public bool Activo { get; set; }
 
     public DateTime FechaCreacion { get; set; }
@@ -32,6 +44,8 @@ public partial class ServicioFecha
     public virtual Colaborador? ColaboradorAsignado { get; set; }
 
     public virtual CatEstatusServicioFecha EstatusServicioFecha { get; set; } = null!;
+
+    public virtual ICollection<Pago> Pagos { get; set; } = new List<Pago>();
 
     public virtual Servicio Servicio { get; set; } = null!;
 

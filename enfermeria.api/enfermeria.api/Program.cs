@@ -88,6 +88,10 @@ builder.Services.AddScoped<IHorarioRepository, HorarioRepository>();
 builder.Services.AddScoped<IConfiguracionRepository, ConfiguracionRepository>();
 builder.Services.AddScoped<IServicioFechaRepository, ServicioFechaRepository>();
 builder.Services.AddScoped<IServicioFechasOfertaRepository, ServicioFechasOfertaRepository>();
+builder.Services.AddScoped<IEncuestaPlantillaRepository, EncuestaPlantillaRepository>();
+builder.Services.AddScoped<IEncuestaPlantillaPreguntaRepository, EncuestaPlantillaPreguntaRepository>();
+builder.Services.AddScoped<IPagoLoteRepository, PagoLoteRepository>();
+builder.Services.AddScoped<IPagoRepository, PagoRepository>();
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 

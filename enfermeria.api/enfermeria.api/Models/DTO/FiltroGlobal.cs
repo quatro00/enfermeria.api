@@ -18,5 +18,9 @@
         public int? NoServicio { get; set; }
         public DateTime? FechaInicio { get; set; }
         public DateTime? FechaFin { get; set; }
+        public Guid? ColaboradorAsignadoId { get; set; }
+        public DateTime? Periodo { get; set; }
+        public int? EstatusPagoLoteId { get; set; }
+        public Guid? PagoLoteId { get; set; }
     }
 }

@@ -34,6 +34,10 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
 
     public virtual DbSet<CatEstado> CatEstados { get; set; }
 
+    public virtual DbSet<CatEstatusPago> CatEstatusPagos { get; set; }
+
+    public virtual DbSet<CatEstatusPagoLote> CatEstatusPagoLotes { get; set; }
+
     public virtual DbSet<CatEstatusServicio> CatEstatusServicios { get; set; }
 
     public virtual DbSet<CatEstatusServicioFecha> CatEstatusServicioFechas { get; set; }
@@ -56,9 +60,17 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
 
     public virtual DbSet<Contacto> Contactos { get; set; }
 
+    public virtual DbSet<EncuestaPlantilla> EncuestaPlantillas { get; set; }
+
+    public virtual DbSet<EncuestaPlantillaPreguntum> EncuestaPlantillaPregunta { get; set; }
+
     public virtual DbSet<EstatusColaborador> EstatusColaboradors { get; set; }
 
     public virtual DbSet<Paciente> Pacientes { get; set; }
+
+    public virtual DbSet<Pago> Pagos { get; set; }
+
+    public virtual DbSet<PagoLote> PagoLotes { get; set; }
 
     public virtual DbSet<RelEstadoColaborador> RelEstadoColaboradors { get; set; }
 
@@ -155,6 +167,22 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Nombre).HasMaxLength(500);
             entity.Property(e => e.NombreCorto).HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<CatEstatusPago>(entity =>
+        {
+            entity.ToTable("CatEstatusPago");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Descripcion).HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<CatEstatusPagoLote>(entity =>
+        {
+            entity.ToTable("CatEstatusPagoLote");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Descripcion).HasMaxLength(50);
         });
 
         modelBuilder.Entity<CatEstatusServicio>(entity =>
@@ -315,6 +343,39 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
                 .HasConstraintName("FK_Contacto_Paciente");
         });
 
+        modelBuilder.Entity<EncuestaPlantilla>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Encuesta__C5DEB5EC9B4253A5");
+
+            entity.ToTable("EncuestaPlantilla");
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newsequentialid())");
+            entity.Property(e => e.Descripcion).HasMaxLength(500);
+            entity.Property(e => e.FechaCreacion)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
+            entity.Property(e => e.No).ValueGeneratedOnAdd();
+            entity.Property(e => e.Nombre).HasMaxLength(200);
+            entity.Property(e => e.TipoServicio).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<EncuestaPlantillaPreguntum>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Encuesta__EBB2A379383D9F73");
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newsequentialid())");
+            entity.Property(e => e.FechaCreacion).HasColumnType("datetime");
+            entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
+            entity.Property(e => e.Requerida).HasDefaultValue(true);
+            entity.Property(e => e.Texto).HasMaxLength(500);
+            entity.Property(e => e.Tipo).HasMaxLength(50);
+
+            entity.HasOne(d => d.Plantilla).WithMany(p => p.EncuestaPlantillaPregunta)
+                .HasForeignKey(d => d.PlantillaId)
+                .HasConstraintName("FK__EncuestaP__Plant__5B78929E");
+        });
+
         modelBuilder.Entity<EstatusColaborador>(entity =>
         {
             entity.ToTable("EstatusColaborador");
@@ -340,6 +401,58 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
             entity.Property(e => e.Nombre).HasMaxLength(500);
             entity.Property(e => e.Peso).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.Telefono).HasMaxLength(500);
+        });
+
+        modelBuilder.Entity<Pago>(entity =>
+        {
+            entity.ToTable("Pago");
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newsequentialid())");
+            entity.Property(e => e.Comision).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Comprobante).HasMaxLength(500);
+            entity.Property(e => e.CostoOperativo).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.FechaCreacion).HasColumnType("datetime");
+            entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
+            entity.Property(e => e.FechaPago).HasColumnType("datetime");
+            entity.Property(e => e.ImporteBruto).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.No).ValueGeneratedOnAdd();
+            entity.Property(e => e.Referencia).HasMaxLength(50);
+            entity.Property(e => e.Retencion).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Total).HasColumnType("decimal(18, 2)");
+
+            entity.HasOne(d => d.EstatusPago).WithMany(p => p.Pagos)
+                .HasForeignKey(d => d.EstatusPagoId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Pago_CatEstatusPago");
+
+            entity.HasOne(d => d.PagoLote).WithMany(p => p.Pagos)
+                .HasForeignKey(d => d.PagoLoteId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Pago_PagoLote");
+
+            entity.HasOne(d => d.ServicioFecha).WithMany(p => p.Pagos)
+                .HasForeignKey(d => d.ServicioFechaId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Pago_ServicioFechas");
+        });
+
+        modelBuilder.Entity<PagoLote>(entity =>
+        {
+            entity.ToTable("PagoLote");
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newsequentialid())");
+            entity.Property(e => e.Csv).HasMaxLength(500);
+            entity.Property(e => e.Etiqueta).HasMaxLength(500);
+            entity.Property(e => e.FechaCreacion).HasColumnType("datetime");
+            entity.Property(e => e.FechaFin).HasColumnType("datetime");
+            entity.Property(e => e.FechaInicio).HasColumnType("datetime");
+            entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
+            entity.Property(e => e.No).ValueGeneratedOnAdd();
+
+            entity.HasOne(d => d.EstatosPagoLote).WithMany(p => p.PagoLotes)
+                .HasForeignKey(d => d.EstatosPagoLoteId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PagoLote_CatEstatusPagoLote");
         });
 
         modelBuilder.Entity<RelEstadoColaborador>(entity =>
@@ -441,10 +554,16 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
         {
             entity.Property(e => e.Id).HasDefaultValueSql("(newsequentialid())");
             entity.Property(e => e.CantidadHoras).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Comision).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.CostosOperativos).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.FechaCreacion).HasColumnType("datetime");
             entity.Property(e => e.FechaInicio).HasColumnType("datetime");
             entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
             entity.Property(e => e.FechaTermino).HasColumnType("datetime");
+            entity.Property(e => e.ImporteBruto).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.ImporteSolicitado).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Retenciones).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Total).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.UsuarioModificacion)
                 .HasMaxLength(10)
                 .IsFixedLength();
