@@ -206,7 +206,7 @@ public class CotizacionPdf
         this.Numero = servicio.No;
         this.Fecha = servicio.FechaCreacion;
         this.Vigencia = servicio.Vigencia;
-        this.Estado = servicio.Estado.Nombre;
+        this.Estado = servicio.Municipio.Nombre;
         this.Direccion = servicio.Direccion;
         this.Motivo = servicio.PrincipalRazon;
         this.RequiereAyudaBasica = servicio.RequiereAyudaBasica;

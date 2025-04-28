@@ -3,9 +3,11 @@ using System.Collections.Generic;
 
 namespace enfermeria.api.Models.Domain;
 
-public partial class CatEstado
+public partial class CatMunicipio
 {
     public Guid Id { get; set; }
+
+    public Guid EstadoId { get; set; }
 
     public string Nombre { get; set; } = null!;
 
@@ -13,7 +15,7 @@ public partial class CatEstado
 
     public bool Activo { get; set; }
 
-    public virtual ICollection<CatMunicipio> CatMunicipios { get; set; } = new List<CatMunicipio>();
+    public virtual CatEstado Estado { get; set; } = null!;
 
-    public virtual ICollection<RelEstadoColaborador> RelEstadoColaboradors { get; set; } = new List<RelEstadoColaborador>();
+    public virtual ICollection<Servicio> Servicios { get; set; } = new List<Servicio>();
 }

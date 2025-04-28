@@ -15,7 +15,7 @@ public partial class Servicio
 
     public int EstatusServicioId { get; set; }
 
-    public Guid EstadoId { get; set; }
+    public Guid MunicipioId { get; set; }
 
     public string Direccion { get; set; } = null!;
 
@@ -93,9 +93,9 @@ public partial class Servicio
 
     public Guid? UsuarioModificacion { get; set; }
 
-    public virtual CatEstado Estado { get; set; } = null!;
-
     public virtual CatEstatusServicio EstatusServicio { get; set; } = null!;
+
+    public virtual CatMunicipio Municipio { get; set; } = null!;
 
     public virtual Paciente Paciente { get; set; } = null!;
 

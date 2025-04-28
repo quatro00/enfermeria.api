@@ -135,7 +135,7 @@
                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
                .ForMember(dest => dest.No, opt => opt.MapFrom(src => src.No))
                .ForMember(dest => dest.Paciente, opt => opt.MapFrom(src => src.Paciente.Nombre + " " + src.Paciente.Apellidos))
-               .ForMember(dest => dest.Estado, opt => opt.MapFrom(src => src.Estado.Nombre))
+               .ForMember(dest => dest.Estado, opt => opt.MapFrom(src => src.Municipio.Nombre))
                .ForMember(dest => dest.Direccion, opt => opt.MapFrom(src => src.Direccion))
                .ForMember(dest => dest.Motivo, opt => opt.MapFrom(src => src.PrincipalRazon))
                .ForMember(dest => dest.TipoEnfermera, opt => opt.MapFrom(src => src.TipoEnfermera.Descripcion))

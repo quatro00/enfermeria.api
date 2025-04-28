@@ -44,6 +44,8 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
 
     public virtual DbSet<CatHorario> CatHorarios { get; set; }
 
+    public virtual DbSet<CatMunicipio> CatMunicipios { get; set; }
+
     public virtual DbSet<CatServicioFechasOfertaEstatus> CatServicioFechasOfertaEstatuses { get; set; }
 
     public virtual DbSet<CatTipoDocumento> CatTipoDocumentos { get; set; }
@@ -210,6 +212,20 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Descripcion).HasMaxLength(50);
             entity.Property(e => e.PorcentajeTarifa).HasColumnType("decimal(18, 2)");
+        });
+
+        modelBuilder.Entity<CatMunicipio>(entity =>
+        {
+            entity.ToTable("CatMunicipio");
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newsequentialid())");
+            entity.Property(e => e.Nombre).HasMaxLength(50);
+            entity.Property(e => e.NombreCorto).HasMaxLength(50);
+
+            entity.HasOne(d => d.Estado).WithMany(p => p.CatMunicipios)
+                .HasForeignKey(d => d.EstadoId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CatMunicipio_CatEstado");
         });
 
         modelBuilder.Entity<CatServicioFechasOfertaEstatus>(entity =>
@@ -505,15 +521,15 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
             entity.Property(e => e.TotalHoras).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.Vigencia).HasColumnType("datetime");
 
-            entity.HasOne(d => d.Estado).WithMany(p => p.Servicios)
-                .HasForeignKey(d => d.EstadoId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Solicitud_CatEstado");
-
             entity.HasOne(d => d.EstatusServicio).WithMany(p => p.Servicios)
                 .HasForeignKey(d => d.EstatusServicioId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Servicio_CatEstatusServicio");
+
+            entity.HasOne(d => d.Municipio).WithMany(p => p.Servicios)
+                .HasForeignKey(d => d.MunicipioId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Servicio_CatMunicipio");
 
             entity.HasOne(d => d.Paciente).WithMany(p => p.Servicios)
                 .HasForeignKey(d => d.PacienteId)
