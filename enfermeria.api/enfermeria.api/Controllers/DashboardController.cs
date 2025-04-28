@@ -83,12 +83,12 @@ namespace enfermeria.api.Controllers
                         case 1:
                             icono = "user";
                             descripcion = "Por asignar";
-                            color = "warning";
+                            color = "primary";
                             break;
                         case 2:
                             icono = "user-check";
                             descripcion = "Asignados";
-                            color = "info";
+                            color = "secondary";
                             break;
                         case 3: //ok
                             descripcion = "Completados";
