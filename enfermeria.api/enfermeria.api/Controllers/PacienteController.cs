@@ -35,6 +35,8 @@ namespace enfermeria.api.Controllers
         {
             var response = new ResponseModel_2<Paciente>();
 
+            //validaciones
+           
             // Validar si el modelo es válido
             if (!ModelState.IsValid)
             {
@@ -45,6 +47,17 @@ namespace enfermeria.api.Controllers
 
             try
             {
+                //validamos que el telefono no se repita
+                var existeTelefono = await this.pacienteRepository
+                .AnyAsync(p => p.Telefono == dto.Telefono);
+
+                if (existeTelefono) { return BadRequest("El teléfono ya se encuentra registrado con otro paciente."); }
+
+                //validamos que el correo no se repita
+                var existeCorreo = await this.pacienteRepository
+                .AnyAsync(p => p.CorreoElectronico == dto.CorreoElectronico);
+
+                if (existeCorreo) { return BadRequest("El correo ya se encuentra registrado con otro paciente."); }
                 // Mapea el DTO a la entidad Paciente
                 var paciente = mapper.Map<Paciente>(dto);
                 paciente.UsuarioCreacion = Guid.Parse(User.GetId());
