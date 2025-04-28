@@ -15,7 +15,11 @@ namespace enfermeria.api.Models.Specifications
             Criteria = p =>
                 (filtro.IncluirInactivos || p.Activo) &&
                 (filtro.PagoLoteId == null || p.PagoLoteId == filtro.PagoLoteId) &&
-                (filtro.ColaboradorAsignadoId == null || p.ServicioFecha.ColaboradorAsignadoId == filtro.ColaboradorAsignadoId);
+                (filtro.ColaboradorAsignadoId == null || p.ServicioFecha.ColaboradorAsignadoId == filtro.ColaboradorAsignadoId) &&
+                (filtro.FechaInicio == null || p.FechaCreacion >= filtro.FechaInicio) &&
+                (filtro.FechaFin == null || p.FechaCreacion <= filtro.FechaFin.Value.AddDays(1))
+
+                ;
         }
     }
 }

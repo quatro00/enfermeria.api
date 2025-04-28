@@ -22,5 +22,8 @@
         public DateTime? Periodo { get; set; }
         public int? EstatusPagoLoteId { get; set; }
         public Guid? PagoLoteId { get; set; }
+
+        public DateTime? FechaPagoInicio { get; set; }
+        public DateTime? FechaPagoFin { get; set; }
     }
 }
