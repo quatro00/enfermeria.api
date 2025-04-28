@@ -14,8 +14,7 @@ namespace enfermeria.api.Models.Specifications
         {
             Criteria = p =>
                 (filtro.IncluirInactivos || p.Activo) &&
-                (string.IsNullOrEmpty(filtro.Nombre) || p.Nombre.Contains(filtro.Nombre)) &&
-                (string.IsNullOrEmpty(filtro.Nombre) || p.Apellidos.Contains(filtro.Nombre)) &&
+                (string.IsNullOrEmpty(filtro.Nombre) || (p.Nombre.Contains(filtro.Nombre)) || p.Apellidos.Contains(filtro.Nombre)) &&
                 (string.IsNullOrEmpty(filtro.CorreoElectronico) || p.CorreoElectronico.Contains(filtro.CorreoElectronico));
         }
     }

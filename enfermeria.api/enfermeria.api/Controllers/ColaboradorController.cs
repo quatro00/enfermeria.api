@@ -37,7 +37,11 @@ namespace enfermeria.api.Controllers
         public async Task<IActionResult> CrearColaborador([FromBody] CrearColaboradorDto dto)
         {
             var response = new ResponseModel_2<Paciente>();
-
+            dto.Rfc = dto.Rfc.ToUpper();
+            dto.Curp = dto.Curp.ToUpper();
+            dto.CedulaProfesional = dto.CedulaProfesional.ToUpper();
+            dto.Cuenta = dto.Cuenta.ToUpper();
+            dto.Clabe = dto.Clabe.ToUpper();
             // Validar si el modelo es válido
             if (!ModelState.IsValid)
             {
@@ -69,11 +73,27 @@ namespace enfermeria.api.Controllers
                 var existeCorreo = await colaboradorRepository
                 .AnyAsync(p => p.CorreoElectronico == dto.CorreoElectronico);
 
-                if (existeCorreo)
-                {
-                    response.SetResponse(false, "Ya existe un colaborador registrado con ese correo electronico.");
-                    return BadRequest(response);
-                }
+                if (existeCorreo) { return BadRequest("Ya existe un colaborador registrado con ese correo electronico."); }
+
+                //validamos que el telefono no se repita
+                var existeTelefono = await colaboradorRepository
+                .AnyAsync(p => p.Telefono == dto.Telefono);
+
+                if (existeTelefono) { return BadRequest("Ya existe un colaborador registrado con ese teléfono."); }
+
+                //Validamos que el rfc no se repita
+                var existeRfc = await colaboradorRepository
+                .AnyAsync(p => p.Rfc == dto.Rfc);
+
+                if (existeRfc) { return BadRequest("Ya existe un colaborador registrado con ese rfc."); }
+
+                //Validamos que el rfc no se repita
+                var existeCurp = await colaboradorRepository
+                .AnyAsync(p => p.Curp == dto.Curp);
+
+                if (existeCurp) { return BadRequest("Ya existe un colaborador registrado con ese curp."); }
+
+
 
                 // Agregar el paciente al repositorio
                 await colaboradorRepository.AddAsync(colaborador);
