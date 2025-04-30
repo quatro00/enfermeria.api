@@ -83,6 +83,10 @@ public partial class Servicio
 
     public string? ReferenciaPagoStripe { get; set; }
 
+    public string? Transferencia { get; set; }
+
+    public string? ReferenciaTransferencia { get; set; }
+
     public bool Activo { get; set; }
 
     public DateTime FechaCreacion { get; set; }

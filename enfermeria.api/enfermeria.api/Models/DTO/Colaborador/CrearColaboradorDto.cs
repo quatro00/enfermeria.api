@@ -33,6 +33,8 @@ namespace enfermeria.api.Models.DTO.Colaborador
         [Required]
         public string Cuenta { get; set; }
         [Required]
+        public decimal Comision { get; set; }
+        [Required]
         public Guid TipoEnfermeraId { get; set; }
         [Required]
         public List<Guid> Estados { get; set; }

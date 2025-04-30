@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using enfermeria.api.Models.DTO.ServicioFecha;
 using enfermeria.api.Enums;
+using Microsoft.EntityFrameworkCore;
+using enfermeria.api.Data;
 
 namespace enfermeria.api.Controllers
 {
@@ -19,14 +21,18 @@ namespace enfermeria.api.Controllers
     {
         private readonly IMapper mapper;
         private readonly IServicioFechaRepository servicioFechaRepository;
+        private readonly IServicioRepository servicioRepository;
         private readonly IColaboradorRepository colaboradorRepository;
         private readonly IServicioFechasOfertaRepository servicioFechasOfertaRepository;
+        private readonly DbContext _context;
 
-        public ServicioFechaController(IServicioFechaRepository servicioFechaRepository, IServicioFechasOfertaRepository servicioFechasOfertaRepository, IColaboradorRepository colaboradorRepository, IMapper mapper)
+        public ServicioFechaController(IServicioFechaRepository servicioFechaRepository, IServicioFechasOfertaRepository servicioFechasOfertaRepository, IColaboradorRepository colaboradorRepository, IServicioRepository servicioRepository, DbAb1c8aEnfermeriaContext context, IMapper mapper)
         {
             this.servicioFechasOfertaRepository = servicioFechasOfertaRepository;
             this.colaboradorRepository = colaboradorRepository;
             this.servicioFechaRepository = servicioFechaRepository;
+            this.servicioRepository = servicioRepository;
+            this._context = context;
             this.mapper = mapper;
         }
 
@@ -79,6 +85,56 @@ namespace enfermeria.api.Controllers
 
 
         }
+
+        [HttpGet("obtener-servicios-fechas")]
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> GetServiciosFechaByServicio([FromQuery] ServicioFechaFilter dto)
+        {
+
+            FiltroGlobal filtro = new FiltroGlobal()
+            {
+                ServicioId = dto.ServicioId
+            };
+
+
+            //creamos la respuesta
+            var response = new ResponseModel_2<List<ObtenerServiciosFechasDto>>();
+            filtro.IncluirInactivos = false;
+
+            try
+            {
+                //colocamos los filtros
+                var spec = new ServicioFechasSpecification(filtro);
+
+                //colocamos los includes
+                spec.IncludeStrings = new List<string> { "EstatusServicioFecha", "ServicioFechasOferta", "Servicio" };
+
+                //convertimos de la clase al dto
+                var result = await this.servicioFechaRepository.ListAsync(spec);
+                var resultDto = mapper.Map<List<ObtenerServiciosFechasDto>>(result);
+
+                //seteamos el resultado
+                response.SetResponse(true, "");
+                response.Result = resultDto;
+
+                return Ok(resultDto.OrderBy(x=>x.FechaInicio));
+            }
+            catch (Exception ex)
+            {
+                // Si ocurre una excepción, manejar el error
+                response.SetResponse(false, "Ocurrió un error al crear el paciente.");
+
+                // Puedes registrar el error o manejarlo como desees, por ejemplo:
+                // Log.Error(ex, "Error al crear paciente");
+
+                // Devolver una respuesta con el error
+                response.Data = ex.Message; // Puedes agregar más detalles del error si lo deseas
+                return StatusCode(500, response); // O devolver un BadRequest(400) si el error es de entrada
+            }
+
+
+        }
+
         [HttpGet("obtener-guardias-fechas")]
         [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> GetServicioFechaFiltros([FromQuery] GetServicioFechaFiltrosDto model)
@@ -190,6 +246,7 @@ namespace enfermeria.api.Controllers
         }
 
         [HttpPut("{id}/liberar-oferta")]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> LiberarOferta(Guid id)
         {
             var servicioFecha = await this.servicioFechaRepository.GetByIdAsync(id);
@@ -205,6 +262,7 @@ namespace enfermeria.api.Controllers
             return Ok();
         }
         [HttpPut("{id}/terminar-oferta")]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> TerminarOferta(Guid id)
         {
             var servicioFecha = await this.servicioFechaRepository.GetByIdAsync(id);
@@ -219,6 +277,7 @@ namespace enfermeria.api.Controllers
             return Ok();
         }
         [HttpPut("{id}/cancelar-oferta")]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> CancelarOferta(Guid id)
         {
             var servicioFecha = await this.servicioFechaRepository.GetByIdAsync(id);
@@ -234,6 +293,7 @@ namespace enfermeria.api.Controllers
         }
 
         [HttpPut("{id}/asignar-oferta")]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> AsignarOferta(Guid id, [FromBody] AsignarFechaDto dto)
         {
             var servicioFechasOferta = await this.servicioFechasOfertaRepository.GetByIdAsync(dto.ServicioFechasOfertaId);
@@ -246,6 +306,37 @@ namespace enfermeria.api.Controllers
             servicioFecha.EstatusServicioFechaId = 2;
 
             await this.servicioFechaRepository.UpdateAsync(servicioFecha);
+
+            return Ok();
+        }
+        [HttpPost("asignar-descuentos")]
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> AsignarDescuentos([FromBody] List<AplicarDescuentoDto> dto)
+        {
+            using var transaction = await this._context.Database.BeginTransactionAsync();
+            try
+            {
+                Guid servicioId = new Guid();
+                decimal descuento = 0;
+                foreach (var item in dto)
+                {
+                    var model = await this.servicioFechaRepository.GetByIdAsync(item.Id);
+                    descuento += model.Descuento;
+                    servicioId = model.ServicioId;
+                    model.Descuento = item.Descuento;
+                    await this.servicioFechaRepository.UpdateAsync(model);
+                }
+
+                var servicio = await this.servicioRepository.GetByIdAsync(servicioId);
+                servicio.Descuento = descuento;
+                await this.servicioRepository.UpdateAsync(servicio);
+                //actualizamos el servicio con el total del descuento
+                await transaction.CommitAsync();
+            }
+            catch (Exception ex) { 
+                await transaction.RollbackAsync();
+                return BadRequest("Ocurrio un error al aplicar los descuentos.");
+            }
 
             return Ok();
         }

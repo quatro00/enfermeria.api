@@ -5,6 +5,7 @@
     using enfermeria.api.Helpers.Cotizacion;
     using enfermeria.api.Models.Domain;
     using enfermeria.api.Models.DTO.Banco;
+    using enfermeria.api.Models.DTO.CatMunicipio;
     using enfermeria.api.Models.DTO.Colaborador;
     using enfermeria.api.Models.DTO.Contacto;
     using enfermeria.api.Models.DTO.EncuestaPlantilla;
@@ -158,7 +159,10 @@
                 .ForMember(dest => dest.RequiereCuidadosCriticosDesc, opt => opt.MapFrom(src => src.cuidadosCriticosDesc))
                 .ForMember(dest => dest.TomaMedicamento, opt => opt.MapFrom(src => src.tomaAlgunMedicamento))
                 .ForMember(dest => dest.TomaMedicamentoDesc, opt => opt.MapFrom(src => src.tomaAlgunMedicamentoDesc))
-                .ForMember(dest => dest.PrincipalRazon, opt => opt.MapFrom(src => src.motivo));
+                .ForMember(dest => dest.PrincipalRazon, opt => opt.MapFrom(src => src.motivo))
+                .ForMember(dest => dest.MunicipioId, opt => opt.MapFrom(src => src.municipioId))
+                ;
+
             CreateMap<CrearServicioFechasFormatoDto, ServicioFecha>()
                 .ForMember(dest => dest.Activo, opt => opt.MapFrom(src => true))
                 .ForMember(dest => dest.FechaCreacion, opt => opt.MapFrom(src => DateTime.Now));
@@ -172,9 +176,12 @@
                 .ForMember(dest => dest.FechaCreacion, opt => opt.MapFrom(src => DateTime.Now))
                 .ForMember(dest => dest.CuentaCreada, opt => opt.MapFrom(src => false))
                 .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => ""))
+                .ForMember(dest => dest.Comision, opt => opt.MapFrom(src => src.Comision))
                 ;
             //mapeo banco
+            CreateMap<ServicioFecha, ObtenerServiciosFechasDto>();
             CreateMap<CatBanco, BancoDto>();
+            CreateMap<CatMunicipio, GetMunicipioDto>();
             //mapeo contacto
             CreateMap<UpdateContactoDto, Contacto>();
             CreateMap<Contacto, GetContactoDto>();

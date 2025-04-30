@@ -33,6 +33,8 @@ using System.IO;
 using System.Threading.Tasks;
 using Stripe.Checkout;
 using enfermeria.api.Models.DTO.ServicioFecha;
+using enfermeria.api.Enums;
+using enfermeria.api.Models.DTO.Pago;
 
 namespace enfermeria.api.Controllers
 {
@@ -49,6 +51,7 @@ namespace enfermeria.api.Controllers
         private readonly IPacienteRepository pacienteRepository;
         private readonly IConfiguracionRepository configuracionRepository;
         private readonly IEmailService emailService;
+        private readonly IColaboradorRepository colaboradorRepository;
 
         private readonly StripePaymentService stripePaymentService;
         private readonly string _stripeWebhookSecret = "whsec_I3NrLFcnZtqBwtf2pDh1LWLHICg5p8aU";
@@ -62,9 +65,11 @@ namespace enfermeria.api.Controllers
             ITipoLugarRepository tipoLugarRepository,
             IPacienteRepository pacienteRepository,
             IConfiguracionRepository configuracionRepository,
-            IEmailService emailService
+            IEmailService emailService,
+            IColaboradorRepository colaboradorRepository
             )
         {
+            this.colaboradorRepository = colaboradorRepository;
             this.servicioRepository = servicioRepository;
             this.horarioRepository = horarioRepository;
             this.tipoEnfermeraRepository = tipoEnfermeraRepository;
@@ -78,13 +83,15 @@ namespace enfermeria.api.Controllers
         }
 
         [HttpPost("enviar-cotizacion/{id}")]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> EnviarCotizacionPorCorreo(Guid id, [FromQuery] string correoAdicional)
         {
             // 1. Obtener la cotización con los includes necesarios
             var servicio = await servicioRepository.GetByIdAsync(
                 id,
                 "Id",
-                "Estado",
+                "Municipio",
+                "Municipio.Estado",
                 "TipoLugar",
                 "TipoEnfermera",
                 "Paciente",
@@ -95,13 +102,28 @@ namespace enfermeria.api.Controllers
             if (servicio == null)
                 return NotFound("No se encontró la cotización.");
 
-            var link = await this.stripePaymentService.CreateCheckoutSessionAsync(
-            servicio.Total-servicio.Descuento,
-            $"Pago servicio { servicio.No.ToString() }",
-            "https://tusitio.com/pago-exitoso",
-            "https://tusitio.com/pago-cancelado",
-            servicio.Id.ToString()
-                );
+            var configuraciones = await this.configuracionRepository.ListAsync();
+            decimal limiteMonto = (decimal)configuraciones.Where(x=>x.Id == 8).FirstOrDefault().ValorDecimal;
+            bool excedeMonto = false;
+            
+            string link = "";
+            string cuenta = "";
+            cuenta = configuraciones.Where(x => x.Id == 9).FirstOrDefault().ValorString ?? "";
+
+            if (servicio.Total - servicio.Descuento > limiteMonto) { excedeMonto = true; }
+            
+            if(excedeMonto == false)
+            {
+                link = await this.stripePaymentService.CreateCheckoutSessionAsync(
+                servicio.Total - servicio.Descuento,
+                $"Pago servicio {servicio.No.ToString()}",
+                "https://tusitio.com/pago-exitoso",
+                "https://tusitio.com/pago-cancelado",
+                servicio.Id.ToString()
+               );
+            }
+            
+           
 
 
             // 2. Generar PDF temporalmente
@@ -129,11 +151,20 @@ namespace enfermeria.api.Controllers
                 
             };
 
-            await emailService.SendEmailAsync(request, link);
+            if (excedeMonto == false)
+            {
+                await emailService.SendEmailAsync(request, link);
+            }
+            else
+            {
+                await emailService.SendEmailAsync_Cuenta(request, cuenta);
+            }
+            
 
             return NoContent();
         }
         [HttpPost("aplicar-descuento/{id}")]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> AplicarDescuento(Guid id, [FromQuery] decimal monto)
         {
             // 1. Obtener la cotización con los includes necesarios
@@ -165,8 +196,8 @@ namespace enfermeria.api.Controllers
             var servicio = await this.servicioRepository.GetByIdAsync(
                 id,
                "Id",
-
-                "Estado",
+               "Municipio",
+                "Municipio.Estado",
                 "TipoLugar",
                 "TipoEnfermera",
                 "Paciente",
@@ -224,8 +255,8 @@ namespace enfermeria.api.Controllers
                 var tipoLugar_List = await this.tipoLugarRepository.ListAsync();
                 var tipoLugar = tipoLugar_List.Where(x=>x.Id == dto.tipoLugarId).FirstOrDefault();
                 var paciente = await this.pacienteRepository.GetByIdAsync(dto.pacienteId);
-                
-                
+
+
 
                 var serviciosCotizacion = new List<ServicioCotizacion>();
 
@@ -254,6 +285,8 @@ namespace enfermeria.api.Controllers
                 foreach (var fecha in fechas)
                 {
                     fecha.UsuarioCreacion = Guid.Parse(User.GetId());
+                    fecha.EstatusServicioFechaId = (int)EstatusServicioFechaEnum.PorAsignar;
+                    fecha.Descuento = 0;
                 }
 
                 
@@ -370,7 +403,7 @@ namespace enfermeria.api.Controllers
                 //colocamos los includes
                 spec.IncludeStrings = new List<string>
                     {
-                         "Estado",
+                         "Municipio",
                         "TipoLugar",
                         "TipoEnfermera",
                         "Paciente",
@@ -400,6 +433,155 @@ namespace enfermeria.api.Controllers
 
 
         }
+
+        [Authorize(Roles = "Administrador")]
+        [HttpPut("{id}/cancelar-cotizacion")]
+        public async Task<IActionResult> Cancelar(Guid id)
+        {
+            var response = new ResponseModel_2<GetPacienteDto>();
+
+            try
+            {
+                // Obtener el paciente actual desde la base de datos
+                //UpdateContactoDto dto;
+
+                var contacto = await this.servicioRepository.GetByIdAsync(id);
+                if (contacto == null)
+                {
+                    return NotFound("Contacto no encontrado.");
+                }
+
+                // Solo actualizamos el campo 'Activo' a false
+                contacto.EstatusServicioId = 99;
+                // Guardamos los cambios
+
+                await servicioRepository.UpdateAsync(contacto);
+
+                return NoContent(); // Respuesta exitosa sin contenido
+            }
+            catch (Exception ex)
+            {
+                // Si ocurre una excepción, manejar el error
+                response.SetResponse(false, "Ocurrió un error al crear el paciente.");
+
+                // Puedes registrar el error o manejarlo como desees, por ejemplo:
+                // Log.Error(ex, "Error al crear paciente");
+
+                // Devolver una respuesta con el error
+                response.Data = ex.Message; // Puedes agregar más detalles del error si lo deseas
+                return StatusCode(500, response); // O devolver un BadRequest(400) si el error es de entrada
+            }
+
+        }
+        [HttpPost("adjuntar-referencia")]
+        [Consumes("multipart/form-data")]
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> AdjuntarReferencia([FromForm] AdjuntarReferenciaDto request)
+        {
+            var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "pagos", request.ServicioId.ToString().ToUpper());
+            var rutasPublicas = new Dictionary<string, string>();
+            var avatar = "";
+            string rutaArchivo = "";
+            List<ColaboradorDocumento> colaboradorDocumentos = new List<ColaboradorDocumento>();
+            if (!Directory.Exists(uploadPath))
+            {
+                Directory.CreateDirectory(uploadPath);
+            }
+
+            async Task GuardarArchivo(IFormFile archivo)
+            {
+                if (archivo != null && archivo.Length > 0)
+                {
+
+                    var ext = Path.GetExtension(archivo.FileName);
+                    var fileName = $"{Guid.NewGuid().ToString().ToUpper()}{ext}";
+                    var pathCompleto = Path.Combine(uploadPath, fileName);
+
+                    try
+                    {
+                        using var stream = new FileStream(pathCompleto, FileMode.Create);
+                        await archivo.CopyToAsync(stream);
+
+                        rutaArchivo = pathCompleto;
+                    }
+                    catch (Exception ex) { }
+
+
+                }
+            }
+
+            await GuardarArchivo(request.Transferencia);
+
+            //buscamos el servicio
+            var servicio = await this.servicioRepository.GetByIdAsync(request.ServicioId);
+            servicio.ReferenciaTransferencia = request.Referencia;
+            servicio.Transferencia = rutaArchivo;
+            servicio.EstatusServicioId = 2;
+
+            await this.servicioRepository.UpdateAsync(servicio);
+
+            return NoContent();
+        }
+
+        [HttpGet("descargar-pago")]
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> DescargarPago(Guid servicioId)
+        {
+            /*
+            var filePath = Path.Combine("Ruta/Donde/Guardaste/Los/Archivos", fileName);
+
+            if (!System.IO.File.Exists(filePath))
+            {
+                return NotFound();
+            }
+
+            var bytes = System.IO.File.ReadAllBytes(filePath);
+            return File(bytes, "application/octet-stream", fileName);
+            */
+            //-----------------------------
+            
+            //creamos la respuesta
+            var response = new ResponseModel_2<List<GetPagosDto>>();
+            
+            try
+            {
+                //colocamos los filtros
+
+                var servicio = await this.servicioRepository.GetByIdAsync(servicioId);
+                var transferenciaPath = servicio.Transferencia ?? "";
+                if(transferenciaPath == "")
+                {
+                    return BadRequest("El pago no fue hecho con transferencia.");
+                }
+                
+                var filePath =servicio.Transferencia;
+
+
+                if (!System.IO.File.Exists(filePath))
+                {
+                    return NotFound();
+                }
+
+                var bytes = System.IO.File.ReadAllBytes(filePath);
+                string extension = Path.GetExtension(filePath);
+
+                return File(bytes, "application/octet-stream", servicio.ReferenciaTransferencia + extension);
+
+            }
+            catch (Exception ex)
+            {
+                // Si ocurre una excepción, manejar el error
+                response.SetResponse(false, "Ocurrió un error al crear el paciente.");
+
+                // Puedes registrar el error o manejarlo como desees, por ejemplo:
+                // Log.Error(ex, "Error al crear paciente");
+
+                // Devolver una respuesta con el error
+                response.Data = ex.Message; // Puedes agregar más detalles del error si lo deseas
+                return StatusCode(500, response); // O devolver un BadRequest(400) si el error es de entrada
+            }
+        }
+
         //-----------Pagos confirmacion-------
         // Endpoint para recibir los eventos del Webhook
         [HttpPost("webhook")]

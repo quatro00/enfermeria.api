@@ -13,8 +13,7 @@ namespace enfermeria.api.Models.Specifications
         public ServicioSpecification(FiltroGlobal filtro)
         {
             Criteria = p =>
-                (string.IsNullOrEmpty(filtro.Nombre) || p.Paciente.Nombre.Contains(filtro.Nombre)) &&
-                (string.IsNullOrEmpty(filtro.Nombre) || p.Paciente.Apellidos.Contains(filtro.Nombre)) &&
+                (string.IsNullOrEmpty(filtro.Nombre) || (p.Paciente.Nombre.Contains(filtro.Nombre) || p.Paciente.Apellidos.Contains(filtro.Nombre))) &&
                 (string.IsNullOrEmpty(filtro.noServicio) || p.No.ToString().ToUpper().Contains(filtro.noServicio)) &&
                 (filtro.EstadoId == null || p.Municipio.EstadoId == filtro.EstadoId) &&
                 (filtro.EstatusServicioId == null || p.EstatusServicioId == filtro.EstatusServicioId);

@@ -187,9 +187,11 @@ public class CotizacionPdfGenerator
                             table.Cell().Text($"${total.PrecioHora:N2}");
                             table.Cell().Text($"${total.Subtotal:N2}");
                         }
+                        table.Cell().ColumnSpan(3).AlignRight().Text("Total General:").Bold();
+                        table.Cell().Text($"${cotizacion.Descuentos:N2}").Bold();
 
                         table.Cell().ColumnSpan(3).AlignRight().Text("Total General:").Bold();
-                        table.Cell().Text($"${cotizacion.TotalGeneral:N2}").Bold();
+                        table.Cell().Text($"${(cotizacion.TotalGeneral - cotizacion.Descuentos):N2}").Bold();
                     });
                 });
             });
@@ -204,9 +206,10 @@ public class CotizacionPdf
     public CotizacionPdf(Servicio servicio) 
     {
         this.Numero = servicio.No;
+        this.Descuentos = servicio.Descuento;
         this.Fecha = servicio.FechaCreacion;
         this.Vigencia = servicio.Vigencia;
-        this.Estado = servicio.Municipio.Nombre;
+        this.Estado = servicio.Municipio.Nombre +", " + servicio.Municipio.Estado.NombreCorto;
         this.Direccion = servicio.Direccion;
         this.Motivo = servicio.PrincipalRazon;
         this.RequiereAyudaBasica = servicio.RequiereAyudaBasica;
@@ -270,6 +273,7 @@ public class CotizacionPdf
         this.TotalGeneral = this.TotalesPorTurno.Sum(x => x.Subtotal);
     }
     public int Numero { get; set; }
+    public decimal Descuentos { get; set; }
     public DateTime Fecha { get; set; }
     public DateTime Vigencia { get; set; }
     public string Estado { get; set; }

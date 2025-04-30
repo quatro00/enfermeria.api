@@ -510,6 +510,7 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
             entity.Property(e => e.Observaciones).HasMaxLength(500);
             entity.Property(e => e.PrincipalRazon).HasMaxLength(500);
             entity.Property(e => e.ReferenciaPagoStripe).HasMaxLength(500);
+            entity.Property(e => e.ReferenciaTransferencia).HasMaxLength(50);
             entity.Property(e => e.RequiereAtencionNeurologicaDesc).HasMaxLength(500);
             entity.Property(e => e.RequiereAyudaBasicaDesc).HasMaxLength(500);
             entity.Property(e => e.RequiereCuidadosCriticosDesc).HasMaxLength(500);
@@ -519,6 +520,7 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
             entity.Property(e => e.TomaMedicamentoDesc).HasMaxLength(500);
             entity.Property(e => e.Total).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.TotalHoras).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Transferencia).HasMaxLength(500);
             entity.Property(e => e.Vigencia).HasColumnType("datetime");
 
             entity.HasOne(d => d.EstatusServicio).WithMany(p => p.Servicios)
@@ -572,6 +574,7 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
             entity.Property(e => e.CantidadHoras).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.Comision).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.CostosOperativos).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Descuento).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.FechaCreacion).HasColumnType("datetime");
             entity.Property(e => e.FechaInicio).HasColumnType("datetime");
             entity.Property(e => e.FechaModificacion).HasColumnType("datetime");

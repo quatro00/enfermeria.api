@@ -5,6 +5,7 @@
         public Guid pacienteId { get; set; }
         public string motivo {  get; set; }
         public Guid estadoId { get; set; }
+        public Guid municipioId { get; set; }
         public string direccion {  get; set; }
         //--------------------
         public bool requiereAyudaBasica { get; set; }
