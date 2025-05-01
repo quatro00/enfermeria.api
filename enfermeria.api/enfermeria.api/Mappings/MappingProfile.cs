@@ -70,7 +70,7 @@
                 .ForMember(dest => dest.Horas, opt => opt.MapFrom(src => src.CantidadHoras))
                 .ForMember(dest => dest.ImporteBruto, opt => opt.MapFrom(src => src.ImporteBruto))
                 .ForMember(dest => dest.ImporteSolicitado, opt => opt.MapFrom(src => src.ImporteSolicitado))
-                .ForMember(dest => dest.Comision, opt => opt.MapFrom(src => src.Comision))
+                .ForMember(dest => dest.Comision, opt => opt.MapFrom(src => (src.Total - src.Descuento) * (src.ColaboradorAsignado.Comision/Convert.ToDecimal(100))))
                 .ForMember(dest => dest.CostosOperativos, opt => opt.MapFrom(src => src.CostosOperativos))
                 .ForMember(dest => dest.Retenciones, opt => opt.MapFrom(src => src.Retenciones))
                 .ForMember(dest => dest.Total, opt => opt.MapFrom(src => src.Total))

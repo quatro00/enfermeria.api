@@ -12,6 +12,7 @@ using enfermeria.api.Models.DTO.ServicioFecha;
 using enfermeria.api.Enums;
 using Microsoft.EntityFrameworkCore;
 using enfermeria.api.Data;
+using Stripe.Apps;
 
 namespace enfermeria.api.Controllers
 {
@@ -24,11 +25,13 @@ namespace enfermeria.api.Controllers
         private readonly IServicioRepository servicioRepository;
         private readonly IColaboradorRepository colaboradorRepository;
         private readonly IServicioFechasOfertaRepository servicioFechasOfertaRepository;
+        private readonly IConfiguracionRepository configuracionRepository;
         private readonly DbContext _context;
 
-        public ServicioFechaController(IServicioFechaRepository servicioFechaRepository, IServicioFechasOfertaRepository servicioFechasOfertaRepository, IColaboradorRepository colaboradorRepository, IServicioRepository servicioRepository, DbAb1c8aEnfermeriaContext context, IMapper mapper)
+        public ServicioFechaController(IServicioFechaRepository servicioFechaRepository, IServicioFechasOfertaRepository servicioFechasOfertaRepository, IColaboradorRepository colaboradorRepository, IServicioRepository servicioRepository, IConfiguracionRepository configuracionRepository, DbAb1c8aEnfermeriaContext context, IMapper mapper)
         {
             this.servicioFechasOfertaRepository = servicioFechasOfertaRepository;
+            this.configuracionRepository = configuracionRepository;
             this.colaboradorRepository = colaboradorRepository;
             this.servicioFechaRepository = servicioFechaRepository;
             this.servicioRepository = servicioRepository;
@@ -145,7 +148,10 @@ namespace enfermeria.api.Controllers
             try
             {
                 Guid? id = null;
+                var configuraciones = await this.configuracionRepository.ListAsync();
 
+                decimal costosOperativos = (decimal)configuraciones.Where(x => x.Id == 10).FirstOrDefault().ValorDecimal;
+                decimal retenciones = (decimal)configuraciones.Where(x => x.Id == 11).FirstOrDefault().ValorDecimal;
                 if (model.ColaboradorAsignadoId != null)
                 {
                     var colaboradores = await this.colaboradorRepository.ListAsync();
@@ -171,6 +177,12 @@ namespace enfermeria.api.Controllers
                 var result = await this.servicioFechaRepository.ListAsync(spec);
                 var resultDto = mapper.Map<List<GetServicioFechaFiltrosResponse>>(result);
 
+                foreach(var item in resultDto) 
+                {
+                    item.CostosOperativos = (item.Total - item.Descuento) * (costosOperativos / decimal.Parse("100"));
+                    item.Retenciones = (item.Total - item.Descuento) * (retenciones / decimal.Parse("100"));
+                    item.ImporteBruto = (item.Total - item.Descuento) - item.Comision - item.Retenciones - item.CostosOperativos;
+                }
                 //seteamos el resultado
                 response.SetResponse(true, "");
                 response.Result = resultDto;

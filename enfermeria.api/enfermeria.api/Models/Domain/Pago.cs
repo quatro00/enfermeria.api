@@ -21,6 +21,8 @@ public partial class Pago
 
     public decimal CostoOperativo { get; set; }
 
+    public decimal Descuento { get; set; }
+
     public decimal Total { get; set; }
 
     public int EstatusPagoId { get; set; }

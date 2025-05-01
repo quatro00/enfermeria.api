@@ -10,6 +10,7 @@
         public decimal ImporteBruto { get; set; }
         public decimal ImporteSolicitado { get; set; }
         public decimal Comision { get; set; }
+        public decimal Descuento { get; set; }
         public decimal CostosOperativos { get; set; }
         public decimal Retenciones { get; set; }
         public decimal Total { get; set; }

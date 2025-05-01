@@ -427,6 +427,7 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
             entity.Property(e => e.Comision).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.Comprobante).HasMaxLength(500);
             entity.Property(e => e.CostoOperativo).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Descuento).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.FechaCreacion).HasColumnType("datetime");
             entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
             entity.Property(e => e.FechaPago).HasColumnType("datetime");

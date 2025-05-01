@@ -25,15 +25,19 @@ namespace enfermeria.api.Controllers
     {
         private readonly IMapper mapper;
         private readonly IPagoLoteRepository pagoLoteRepository;
+        private readonly IColaboradorRepository colaboradorRepository;
         private readonly IServicioFechaRepository servicioFechasRepository;
         private readonly IPagoRepository pagoRepository;
+        private readonly IConfiguracionRepository configuracionRepository;
         private readonly DbContext _context;
 
-        public PagoLoteController(IPagoLoteRepository pagoLoteRepository, IMapper mapper, IServicioFechaRepository servicioFechasRepository, DbAb1c8aEnfermeriaContext context, IPagoRepository pagoRepository)
+        public PagoLoteController(IPagoLoteRepository pagoLoteRepository, IMapper mapper, IServicioFechaRepository servicioFechasRepository, DbAb1c8aEnfermeriaContext context, IPagoRepository pagoRepository, IConfiguracionRepository configuracionRepository, IColaboradorRepository colaboradorRepository)
         {
             this.pagoLoteRepository = pagoLoteRepository;
+            this.configuracionRepository = configuracionRepository;
             this.servicioFechasRepository = servicioFechasRepository;
             this.pagoRepository = pagoRepository;
+            this.colaboradorRepository = colaboradorRepository;
             _context = context;
             this.mapper = mapper;
         }
@@ -43,8 +47,9 @@ namespace enfermeria.api.Controllers
         public async Task<IActionResult> CrearPagoLote([FromBody] CrearPagoLoteDto dto)
         {
             var response = new ResponseModel_2<Paciente>();
+            
 
-            if(dto.FechaInicio > dto.FechaFin)
+            if (dto.FechaInicio > dto.FechaFin)
             {
                 return BadRequest("La fecha de inicio no puede ser mayor a la fecha de termino.");
             }
@@ -60,6 +65,8 @@ namespace enfermeria.api.Controllers
             {
                 //iniciamos la transaccion
                 using var transaction = await this._context.Database.BeginTransactionAsync();
+                //obtenemos los valores para el calculo de comisiones
+                
                 // Mapea el DTO a la entidad Paciente
                 var result = mapper.Map<PagoLote>(dto);
                 result.UsuarioCreacion = Guid.Parse(User.GetId());
@@ -68,13 +75,27 @@ namespace enfermeria.api.Controllers
                 foreach (var item in dto.Pagos)
                 {
                     var servicioFecha = await this.servicioFechasRepository.GetByIdAsync(item);
+
+                    var configuraciones = await this.configuracionRepository.ListAsync();
+                    var colaborador = await this.colaboradorRepository.GetByIdAsync((Guid)servicioFecha.ColaboradorAsignadoId);
+
+                    decimal costosOperativos = (decimal)configuraciones.Where(x => x.Id == 10).FirstOrDefault().ValorDecimal;
+                    decimal retenciones = (decimal)configuraciones.Where(x => x.Id == 11).FirstOrDefault().ValorDecimal;
+
+                    //actualizamos el servicio fecha con los datos correctos de comision, gastos operativos y retenciones
+                    servicioFecha.Comision = (servicioFecha.Total - servicioFecha.Descuento) * (colaborador.Comision / Decimal.Parse("100"));
+                    servicioFecha.CostosOperativos = (servicioFecha.Total - servicioFecha.Descuento) * (costosOperativos / Decimal.Parse("100"));
+                    servicioFecha.Retenciones = (servicioFecha.Total - servicioFecha.Descuento) * (retenciones / Decimal.Parse("100"));
+                    servicioFecha.ImporteBruto = servicioFecha.Total - servicioFecha.Descuento - servicioFecha.Comision - servicioFecha.Retenciones - servicioFecha.CostosOperativos;
+
                     result.Pagos.Add(new Pago() {
                         ServicioFechaId = servicioFecha.Id,
-                        ImporteBruto = servicioFecha.ImporteBruto,
+                        ImporteBruto = servicioFecha.Total,
                         Comision = servicioFecha.Comision,
+                        Descuento = servicioFecha.Descuento,
                         Retencion = servicioFecha.Retenciones,
                         CostoOperativo = servicioFecha.CostosOperativos,
-                        Total = servicioFecha.Total,
+                        Total = servicioFecha.ImporteBruto,
                         EstatusPagoId = (int)EstatusPagoEnum.PorPagar,
                         Activo = true,
                         FechaCreacion = DateTime.Now,

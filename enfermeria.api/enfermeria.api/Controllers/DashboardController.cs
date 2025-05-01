@@ -88,7 +88,7 @@ namespace enfermeria.api.Controllers
                         case 2:
                             icono = "user-check";
                             descripcion = "Asignados";
-                            color = "secondary";
+                            color = "primary";
                             break;
                         case 3: //ok
                             descripcion = "Completados";
@@ -107,7 +107,7 @@ namespace enfermeria.api.Controllers
                             break;
                         case 99: //ok
                             descripcion = "Cancelados";
-                            color = "danger";
+                            color = "warning";
                             icono = "cancel";
                             break;
                     }
