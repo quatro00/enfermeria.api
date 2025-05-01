@@ -36,9 +36,9 @@ using enfermeria.api.Models.DTO.ServicioFecha;
 using enfermeria.api.Enums;
 using enfermeria.api.Models.DTO.Pago;
 
-namespace enfermeria.api.Controllers
+namespace enfermeria.api.Controllers.Admin
 {
-    [Route("api/[controller]")]
+    [Route("api/admin/[controller]")]
     [ApiController]
     public class ServicioController : ControllerBase
     {
@@ -57,11 +57,11 @@ namespace enfermeria.api.Controllers
         private readonly string _stripeWebhookSecret = "whsec_I3NrLFcnZtqBwtf2pDh1LWLHICg5p8aU";
 
         public ServicioController(
-            IServicioRepository servicioRepository, 
-            IMapper mapper, 
-            IHorarioRepository horarioRepository, 
-            ITipoEnfermeraRepository tipoEnfermeraRepository, 
-            IEstadoRepository estadoRepository, 
+            IServicioRepository servicioRepository,
+            IMapper mapper,
+            IHorarioRepository horarioRepository,
+            ITipoEnfermeraRepository tipoEnfermeraRepository,
+            IEstadoRepository estadoRepository,
             ITipoLugarRepository tipoLugarRepository,
             IPacienteRepository pacienteRepository,
             IConfiguracionRepository configuracionRepository,
@@ -79,7 +79,7 @@ namespace enfermeria.api.Controllers
             this.emailService = emailService;
             this.configuracionRepository = configuracionRepository;
             this.mapper = mapper;
-            this.stripePaymentService = new StripePaymentService("sk_test_51Qj6iqRskzWiZsX2j1arurF8bKGpmMTOfTcgrsV5i10BhW5gmEzwy3SPCTmfueEIjYqXxlXimCRQP3Fc13A1QMc500y1Ii9JOY");
+            stripePaymentService = new StripePaymentService("sk_test_51Qj6iqRskzWiZsX2j1arurF8bKGpmMTOfTcgrsV5i10BhW5gmEzwy3SPCTmfueEIjYqXxlXimCRQP3Fc13A1QMc500y1Ii9JOY");
         }
 
         [HttpPost("enviar-cotizacion/{id}")]
@@ -102,19 +102,19 @@ namespace enfermeria.api.Controllers
             if (servicio == null)
                 return NotFound("No se encontró la cotización.");
 
-            var configuraciones = await this.configuracionRepository.ListAsync();
-            decimal limiteMonto = (decimal)configuraciones.Where(x=>x.Id == 8).FirstOrDefault().ValorDecimal;
+            var configuraciones = await configuracionRepository.ListAsync();
+            decimal limiteMonto = (decimal)configuraciones.Where(x => x.Id == 8).FirstOrDefault().ValorDecimal;
             bool excedeMonto = false;
-            
+
             string link = "";
             string cuenta = "";
             cuenta = configuraciones.Where(x => x.Id == 9).FirstOrDefault().ValorString ?? "";
 
             if (servicio.Total - servicio.Descuento > limiteMonto) { excedeMonto = true; }
-            
-            if(excedeMonto == false)
+
+            if (excedeMonto == false)
             {
-                link = await this.stripePaymentService.CreateCheckoutSessionAsync(
+                link = await stripePaymentService.CreateCheckoutSessionAsync(
                 servicio.Total - servicio.Descuento,
                 $"Pago servicio {servicio.No.ToString()}",
                 "https://tusitio.com/pago-exitoso",
@@ -122,8 +122,8 @@ namespace enfermeria.api.Controllers
                 servicio.Id.ToString()
                );
             }
-            
-           
+
+
 
 
             // 2. Generar PDF temporalmente
@@ -138,7 +138,7 @@ namespace enfermeria.api.Controllers
 
             var destinatarios = correoAdicional.Split(",").ToList();
             //destinatarios.Add(servicio.Paciente.CorreoElectronico);
-            
+
 
             // 4. Enviar correo
             var request = new EmailRequest
@@ -148,7 +148,7 @@ namespace enfermeria.api.Controllers
                 Subject = $"Cotización de servicio #{servicio.No}",
                 Body = "<p>Adjuntamos su cotización de servicio de enfermería.</p>",
                 Attachments = new List<Attachment> { attachment },
-                
+
             };
 
             if (excedeMonto == false)
@@ -159,7 +159,7 @@ namespace enfermeria.api.Controllers
             {
                 await emailService.SendEmailAsync_Cuenta(request, cuenta);
             }
-            
+
 
             return NoContent();
         }
@@ -183,7 +183,7 @@ namespace enfermeria.api.Controllers
                 return NotFound("No se encontró la cotización.");
 
             servicio.Descuento = monto;
-            await this.servicioRepository.UpdateAsync( servicio );
+            await servicioRepository.UpdateAsync(servicio);
 
             return NoContent();
         }
@@ -193,7 +193,7 @@ namespace enfermeria.api.Controllers
         public async Task<IActionResult> ObtenerCotizacion(Guid id)
         {
             // 1. Obtener los datos de la cotización (reemplaza esto por tu lógica real)
-            var servicio = await this.servicioRepository.GetByIdAsync(
+            var servicio = await servicioRepository.GetByIdAsync(
                 id,
                "Id",
                "Municipio",
@@ -217,7 +217,7 @@ namespace enfermeria.api.Controllers
 
             // Devolverlo como archivo descargable
             var fileBytes = System.IO.File.ReadAllBytes(filePath);
-            
+
 
             // 3. Retornar el PDF como archivo descargable
             return File(fileBytes, "application/pdf", $"cotizacion-{id}.pdf");
@@ -238,7 +238,7 @@ namespace enfermeria.api.Controllers
 
             try
             {
-                var configuraciones = await this.configuracionRepository.ListAsync();
+                var configuraciones = await configuracionRepository.ListAsync();
                 var configuracion = configuraciones.Where(x => x.Id == 7).FirstOrDefault();
 
 
@@ -249,12 +249,12 @@ namespace enfermeria.api.Controllers
                 servicio.Lon = "";
 
                 //buscamos al tipo de enfermera para ver el costo
-                var horarios = await this.horarioRepository.ListAsync();
+                var horarios = await horarioRepository.ListAsync();
                 var tipoEnfermera_response = await tipoEnfermeraRepository.Get(dto.tipoEnfermeraId);
                 var estado_response = await estadoRepository.Get(dto.estadoId);
-                var tipoLugar_List = await this.tipoLugarRepository.ListAsync();
-                var tipoLugar = tipoLugar_List.Where(x=>x.Id == dto.tipoLugarId).FirstOrDefault();
-                var paciente = await this.pacienteRepository.GetByIdAsync(dto.pacienteId);
+                var tipoLugar_List = await tipoLugarRepository.ListAsync();
+                var tipoLugar = tipoLugar_List.Where(x => x.Id == dto.tipoLugarId).FirstOrDefault();
+                var paciente = await pacienteRepository.GetByIdAsync(dto.pacienteId);
 
 
 
@@ -278,9 +278,9 @@ namespace enfermeria.api.Controllers
 
                 //mapeamos las fechas
                 var fechas = mapper.Map<List<ServicioFecha>>(listaSalida);
-                
 
-               
+
+
                 decimal cantidadHoras = 0;
                 foreach (var fecha in fechas)
                 {
@@ -289,22 +289,22 @@ namespace enfermeria.api.Controllers
                     fecha.Descuento = 0;
                 }
 
-                
+
 
                 //calculamos los horarios
                 var fechasHorarios = CalculoCotizacion.CalcularHorasPorTurnoPorFecha(horarios, fechas);
                 //colocamos los horarios para las fechas
                 decimal subTotalPropuesto = 0;
-                foreach(var item in fechasHorarios)
+                foreach (var item in fechasHorarios)
                 {
                     serviciosCotizacion = new List<ServicioCotizacion>();
 
-                    foreach(var itemDet in item.DetallePorTurno)
+                    foreach (var itemDet in item.DetallePorTurno)
                     {
                         decimal factor = 1;
-                        var horario = horarios.Where(x=>x.Descripcion == itemDet.Horario).FirstOrDefault();
-                        if(horario != null) { factor = horario.PorcentajeTarifa; }
-                        
+                        var horario = horarios.Where(x => x.Descripcion == itemDet.Horario).FirstOrDefault();
+                        if (horario != null) { factor = horario.PorcentajeTarifa; }
+
 
                         var servicioCotizacion = new ServicioCotizacion()
                         {
@@ -312,7 +312,7 @@ namespace enfermeria.api.Controllers
                             Horario = itemDet.Horario,
                             PrecioHoraBase = tipoEnfermera.costoHora,
                             PrecioHoraFinal = tipoEnfermera.costoHora * factor,
-                            PrecioFinal = (tipoEnfermera.costoHora * factor) * itemDet.Horas,
+                            PrecioFinal = tipoEnfermera.costoHora * factor * itemDet.Horas,
                             Activo = true,
                             FechaCreacion = DateTime.Now,
                             UsuarioCreacion = Guid.Parse(User.GetId()),
@@ -322,17 +322,17 @@ namespace enfermeria.api.Controllers
                         cantidadHoras = cantidadHoras + servicioCotizacion.Horas;
                         serviciosCotizacion.Add(servicioCotizacion);
                     }
-                    
-                    fechas.Where(x=>x.FechaInicio.Date == item.Fecha).FirstOrDefault().ServicioCotizacions = serviciosCotizacion;
+
+                    fechas.Where(x => x.FechaInicio.Date == item.Fecha).FirstOrDefault().ServicioCotizacions = serviciosCotizacion;
                 }
-                
+
                 // Devolver la respuesta con el nuevo paciente
                 servicio.ServicioFechas = fechas;
                 servicio.TotalHoras = cantidadHoras;
                 servicio.SubTotalPropuesto = subTotalPropuesto;
                 servicio.Impuestos = 0;
                 servicio.Descuento = 0;
-                servicio.CostoEstimadoHora = servicio.SubTotalPropuesto/servicio.TotalHoras;
+                servicio.CostoEstimadoHora = servicio.SubTotalPropuesto / servicio.TotalHoras;
                 servicio.Total = servicio.SubTotalPropuesto + servicio.Impuestos - servicio.Descuento;
 
                 var res = await servicioRepository.AddAsync(servicio);
@@ -357,7 +357,7 @@ namespace enfermeria.api.Controllers
                 //// Devolverlo como archivo descargable
                 //var fileBytes = System.IO.File.ReadAllBytes(filePath);
                 ////return File(fileBytes, "application/pdf", fileName);
-               
+
 
             }
             catch (Exception ex)
@@ -377,7 +377,7 @@ namespace enfermeria.api.Controllers
         [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> GetServicios([FromQuery] FilterGetServicio model)
         {
-            
+
             FiltroGlobal filtro = new FiltroGlobal()
             {
                 noServicio = model.No,
@@ -396,7 +396,7 @@ namespace enfermeria.api.Controllers
 
             try
             {
-                
+
                 //colocamos los filtros
                 var spec = new ServicioSpecification(filtro);
 
@@ -411,11 +411,11 @@ namespace enfermeria.api.Controllers
                         "ServicioFechas.ServicioCotizacions",
                         "EstatusServicio"
                     };
-                
+
                 //convertimos de la clase al dto
-                var pacientes = await this.servicioRepository.ListAsync(spec);
+                var pacientes = await servicioRepository.ListAsync(spec);
                 var pacientesDto = mapper.Map<List<GetCotizacionResult>>(pacientes);
-                
+
                 return Ok(pacientesDto);
             }
             catch (Exception ex)
@@ -445,7 +445,7 @@ namespace enfermeria.api.Controllers
                 // Obtener el paciente actual desde la base de datos
                 //UpdateContactoDto dto;
 
-                var contacto = await this.servicioRepository.GetByIdAsync(id);
+                var contacto = await servicioRepository.GetByIdAsync(id);
                 if (contacto == null)
                 {
                     return NotFound("Contacto no encontrado.");
@@ -513,12 +513,12 @@ namespace enfermeria.api.Controllers
             await GuardarArchivo(request.Transferencia);
 
             //buscamos el servicio
-            var servicio = await this.servicioRepository.GetByIdAsync(request.ServicioId);
+            var servicio = await servicioRepository.GetByIdAsync(request.ServicioId);
             servicio.ReferenciaTransferencia = request.Referencia;
             servicio.Transferencia = rutaArchivo;
             servicio.EstatusServicioId = 2;
 
-            await this.servicioRepository.UpdateAsync(servicio);
+            await servicioRepository.UpdateAsync(servicio);
 
             return NoContent();
         }
@@ -539,22 +539,22 @@ namespace enfermeria.api.Controllers
             return File(bytes, "application/octet-stream", fileName);
             */
             //-----------------------------
-            
+
             //creamos la respuesta
             var response = new ResponseModel_2<List<GetPagosDto>>();
-            
+
             try
             {
                 //colocamos los filtros
 
-                var servicio = await this.servicioRepository.GetByIdAsync(servicioId);
+                var servicio = await servicioRepository.GetByIdAsync(servicioId);
                 var transferenciaPath = servicio.Transferencia ?? "";
-                if(transferenciaPath == "")
+                if (transferenciaPath == "")
                 {
                     return BadRequest("El pago no fue hecho con transferencia.");
                 }
-                
-                var filePath =servicio.Transferencia;
+
+                var filePath = servicio.Transferencia;
 
 
                 if (!System.IO.File.Exists(filePath))
@@ -602,8 +602,8 @@ namespace enfermeria.api.Controllers
 
                 // Verificar la firma utilizando el secreto del webhook
                 stripeEvent = EventUtility.ConstructEvent(
-                    json, 
-                    signature, 
+                    json,
+                    signature,
                     _stripeWebhookSecret,
                      throwOnApiVersionMismatch: false
                 );
@@ -636,12 +636,12 @@ namespace enfermeria.api.Controllers
                         if (paymentStatus == "paid")
                         {
                             // Llamar a tu lógica de actualización de estado en la base de datos
-                            var servicio = await this.servicioRepository.GetByIdAsync(orderId);
+                            var servicio = await servicioRepository.GetByIdAsync(orderId);
                             if (servicio != null)
                             {
                                 servicio.ReferenciaPagoStripe = paymentIntentId;
                                 servicio.EstatusServicioId = 2;
-                                await this.servicioRepository.UpdateAsync(servicio);
+                                await servicioRepository.UpdateAsync(servicio);
                             }
                             else
                             {

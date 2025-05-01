@@ -11,9 +11,9 @@ using Microsoft.AspNetCore.Mvc;
 using enfermeria.api.Models.Domain;
 using enfermeria.api.Models.DTO.Banco;
 
-namespace enfermeria.api.Controllers
+namespace enfermeria.api.Controllers.Admin
 {
-    [Route("api/[controller]")]
+    [Route("api/admin/[controller]")]
     [ApiController]
     public class BancoController : ControllerBase
     {
@@ -33,7 +33,7 @@ namespace enfermeria.api.Controllers
         {
             //creamos la respuesta
             var response = new ResponseModel_2<List<BancoDto>>();
-           
+
             try
             {
                 //colocamos los filtros

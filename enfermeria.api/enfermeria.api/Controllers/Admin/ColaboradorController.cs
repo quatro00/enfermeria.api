@@ -15,9 +15,9 @@ using enfermeria.api.Models.Specifications;
 using System;
 using DocumentFormat.OpenXml.Office.CustomUI;
 
-namespace enfermeria.api.Controllers
+namespace enfermeria.api.Controllers.Admin
 {
-    [Route("api/[controller]")]
+    [Route("api/admin/[controller]")]
     [ApiController]
     public class ColaboradorController : ControllerBase
     {
@@ -57,9 +57,10 @@ namespace enfermeria.api.Controllers
                 colaborador.UsuarioCreacionId = Guid.Parse(User.GetId());
 
                 List<RelEstadoColaborador> estadoColaboradors = new List<RelEstadoColaborador>();
-                foreach(var item in dto.Estados)
+                foreach (var item in dto.Estados)
                 {
-                    estadoColaboradors.Add(new RelEstadoColaborador() { 
+                    estadoColaboradors.Add(new RelEstadoColaborador()
+                    {
                         EstadoId = item
                     });
                 }
@@ -135,7 +136,7 @@ namespace enfermeria.api.Controllers
                 TipoEnfermeraId = model.Tipo,
             };
 
-            
+
             //creamos la respuesta
             var response = new ResponseModel_2<List<ColaboradorDto>>();
             if (User.IsInRole("Administrador"))
@@ -143,8 +144,8 @@ namespace enfermeria.api.Controllers
                 filtro.IncluirInactivos = true;
             }
 
-            
-            
+
+
             try
             {
                 //colocamos los filtros
@@ -188,7 +189,7 @@ namespace enfermeria.api.Controllers
         [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> AdjuntarDocumentacion([FromForm] AdjuntarDocumentacionDto request)
         {
-            
+
             var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "documentacion", request.Id.ToString().ToUpper());
             var rutasPublicas = new Dictionary<string, string>();
             var avatar = "";
@@ -203,7 +204,7 @@ namespace enfermeria.api.Controllers
             {
                 if (archivo != null && archivo.Length > 0)
                 {
-                    
+
                     var ext = Path.GetExtension(archivo.FileName);
                     var fileName = $"{clave}{ext}";
                     var pathCompleto = Path.Combine(uploadPath, fileName);
@@ -216,7 +217,7 @@ namespace enfermeria.api.Controllers
                         var rutaPublica = $"{Request.Scheme}://{Request.Host}/uploads/{request.Id.ToString().ToUpper()}/{fileName}";
                         rutasPublicas[clave] = rutaPublica;
 
-                        if(clave == "fotografia")
+                        if (clave == "fotografia")
                         {
                             avatar = rutaPublica;
                         }
@@ -233,11 +234,11 @@ namespace enfermeria.api.Controllers
                             UsuarioCreacion = Guid.Parse(User.GetId()),
                         });
 
-                        
+
                     }
                     catch (Exception ex) { }
 
-                   
+
                 }
             }
 
@@ -248,15 +249,15 @@ namespace enfermeria.api.Controllers
             await GuardarArchivo(request.Cedula, "cedula", (int)TipoDocumentoEnum.CedulaProfesional);
             await GuardarArchivo(request.ContratoFirmado, "contratoFirmado", (int)TipoDocumentoEnum.ContratoFirmado);
             await GuardarArchivo(request.Fotografia, "fotografia", (int)TipoDocumentoEnum.Fotografia);
-            
+
             //buscamos el usurio para cambiar el estatus y agregar los documentos
-            var colaborador = await this.colaboradorRepository.GetByIdAsync(request.Id);
+            var colaborador = await colaboradorRepository.GetByIdAsync(request.Id);
             colaborador.Avatar = avatar;
             colaborador.EstatusColaboradorId = (int)EstatusColaboradorEnum.RegistroCompleto;
-            
+
             colaborador.ColaboradorDocumentos = colaboradorDocumentos;
-            await this.colaboradorRepository.UpdateAsync(colaborador);
-            
+            await colaboradorRepository.UpdateAsync(colaborador);
+
 
             // Aquí guardas las URLs públicas en tu base de datos
 
@@ -278,10 +279,10 @@ namespace enfermeria.api.Controllers
 
                 // Obtener el paciente actual desde la base de datos
                 //UpdateContactoDto dto;
-                var colaborador = await this.colaboradorRepository.GetByIdAsync(id);
+                var colaborador = await colaboradorRepository.GetByIdAsync(id);
                 colaborador.EstatusColaboradorId = (int)EstatusColaboradorEnum.Activo;
 
-                await this.colaboradorRepository.UpdateAsync(colaborador);
+                await colaboradorRepository.UpdateAsync(colaborador);
                 return NoContent(); // Respuesta exitosa sin contenido
             }
             catch (Exception ex)

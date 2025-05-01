@@ -9,9 +9,9 @@ using Microsoft.AspNetCore.Mvc;
 using enfermeria.api.Models.DTO.Contacto;
 using enfermeria.api.Helpers;
 
-namespace enfermeria.api.Controllers
+namespace enfermeria.api.Controllers.Admin
 {
-    [Route("api/[controller]")]
+    [Route("api/admin/[controller]")]
     [ApiController]
     public class ContactoController : ControllerBase
     {

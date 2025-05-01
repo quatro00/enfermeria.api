@@ -11,9 +11,9 @@ using enfermeria.api.Models.DTO.Dashboard;
 using enfermeria.api.Enums;
 using DocumentFormat.OpenXml.Drawing.Charts;
 
-namespace enfermeria.api.Controllers
+namespace enfermeria.api.Controllers.Admin
 {
-    [Route("api/[controller]")]
+    [Route("api/admin/[controller]")]
     [ApiController]
     public class DashboardController : ControllerBase
     {
@@ -39,7 +39,7 @@ namespace enfermeria.api.Controllers
         [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> GetIndicadores(DateTime? Periodo)
         {
-            if(Periodo == null) Periodo = DateTime.Now;
+            if (Periodo == null) Periodo = DateTime.Now;
             DateTime? fechaInicio = null;
             DateTime? fechaFin = null;
 
@@ -68,12 +68,12 @@ namespace enfermeria.api.Controllers
                 spec.IncludeStrings = new List<string> { "EstatusServicioFecha", "ServicioFechasOferta", "Servicio" };
 
                 //convertimos de la clase al dto
-                var result = await this.servicioFechaRepository.ListAsync(spec);
-                
-                List<int> estatusList = new List<int>() { 1,2,3,4,5,99};
+                var result = await servicioFechaRepository.ListAsync(spec);
+
+                List<int> estatusList = new List<int>() { 1, 2, 3, 4, 5, 99 };
 
                 List<IndicadoresDto> resultDto = new List<IndicadoresDto>();
-                foreach (var e in estatusList) 
+                foreach (var e in estatusList)
                 {
                     string descripcion = "";
                     string color = "";
@@ -120,12 +120,12 @@ namespace enfermeria.api.Controllers
                         Total = result.Where(x => x.EstatusServicioFechaId == e).Count(),
 
                     });
-                    
+
                 }
 
                 //seteamos el resultado
                 response.SetResponse(true, "");
-                response.Result = resultDto.OrderBy(x=>x.Orden).ToList();
+                response.Result = resultDto.OrderBy(x => x.Orden).ToList();
 
                 return Ok(resultDto.OrderBy(x => x.Orden).ToList());
             }
@@ -172,7 +172,7 @@ namespace enfermeria.api.Controllers
             try
             {
                 //buscamos los tipos de lugar
-                var tiposLugar = await this.tipoLugarRepository.ListAsync();
+                var tiposLugar = await tipoLugarRepository.ListAsync();
                 GraficoTipoLugar result = new GraficoTipoLugar() { labels = new List<string>(), series = new List<decimal>() };
                 //colocamos los filtros
                 var spec = new ServicioFechasSpecification(filtro);
@@ -181,9 +181,9 @@ namespace enfermeria.api.Controllers
                 spec.IncludeStrings = new List<string> { "EstatusServicioFecha", "ServicioFechasOferta", "Servicio" };
 
                 //convertimos de la clase al dto
-                var servicios = await this.servicioFechaRepository.ListAsync(spec);
-                tiposLugar = tiposLugar.OrderBy(x=>x.Id).ToList();
-                foreach (var item in tiposLugar) 
+                var servicios = await servicioFechaRepository.ListAsync(spec);
+                tiposLugar = tiposLugar.OrderBy(x => x.Id).ToList();
+                foreach (var item in tiposLugar)
                 {
                     decimal total = 0;
                     total = servicios.Where(x => x.Servicio.TipoLugarId == item.Id).Count();
@@ -244,10 +244,10 @@ namespace enfermeria.api.Controllers
                 var spec = new PagoSpecification(filtro);
 
                 //colocamos los includes
-                spec.IncludeStrings = new List<string> {  };
+                spec.IncludeStrings = new List<string> { };
 
                 //convertimos de la clase al dto
-                var pagos = await this.pagoRepository.ListAsync(spec);
+                var pagos = await pagoRepository.ListAsync(spec);
                 var estatusPago = new List<int>();
                 estatusPago.Add(1);
                 estatusPago.Add(2);
@@ -302,7 +302,7 @@ namespace enfermeria.api.Controllers
         [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> GetGuardiasProximas()
         {
-            
+
             DateTime? fechaInicio = null;
             DateTime? fechaFin = null;
 
@@ -332,15 +332,15 @@ namespace enfermeria.api.Controllers
                 spec.IncludeStrings = new List<string> { "EstatusServicioFecha", "ServicioFechasOferta", "Servicio", "ColaboradorAsignado", "Servicio" };
 
                 //convertimos de la clase al dto
-                var guardias = await this.servicioFechaRepository.ListAsync(spec);
-                foreach(var guardia in guardias)
+                var guardias = await servicioFechaRepository.ListAsync(spec);
+                foreach (var guardia in guardias)
                 {
                     string colaboradorAsignado = guardia.ColaboradorAsignado != null
     ? guardia.ColaboradorAsignado.Nombre + " " + guardia.ColaboradorAsignado.Apellidos
     : "Por asignar";
-                    result.Add(new EventoGuardiasDto() 
+                    result.Add(new EventoGuardiasDto()
                     {
-                        Title = "Servicio No." + guardia.Servicio.No.ToString() + " Colaborador: "+ colaboradorAsignado,
+                        Title = "Servicio No." + guardia.Servicio.No.ToString() + " Colaborador: " + colaboradorAsignado,
                         Start = guardia.FechaInicio.ToString("yyyy-MM-ddTHH:mm:ss"),
                         End = guardia.FechaTermino.ToString("yyyy-MM-ddTHH:mm:ss"),
                         Description = "Guardia",
@@ -411,10 +411,11 @@ namespace enfermeria.api.Controllers
                 spec.IncludeStrings = new List<string> { };
 
                 //convertimos de la clase al dto
-                var guardias = await this.pagoRepository.ListAsync(spec);
+                var guardias = await pagoRepository.ListAsync(spec);
                 DateTime fechaBusqueda = (DateTime)fechaInicio;
 
-                for (int i = 0; i < 12; i++){
+                for (int i = 0; i < 12; i++)
+                {
                     DateTime fechaInicio_busqueda = (DateTime)fechaInicio;
                     DateTime fechaFinBusqueda = fechaInicio_busqueda.AddMonths(1).AddDays(-1);
 

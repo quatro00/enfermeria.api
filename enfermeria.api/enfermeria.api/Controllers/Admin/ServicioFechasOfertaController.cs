@@ -9,9 +9,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using enfermeria.api.Models.DTO.ServicioFechaOferta;
 
-namespace enfermeria.api.Controllers
+namespace enfermeria.api.Controllers.Admin
 {
-    [Route("api/[controller]")]
+    [Route("api/admin/[controller]")]
     [ApiController]
     public class ServicioFechasOfertaController : ControllerBase
     {
@@ -53,7 +53,7 @@ namespace enfermeria.api.Controllers
                 spec.IncludeStrings = new List<string> { "Colaborador", "EstatusOferta", "ServicioFecha", "Colaborador.TipoEnfermera" };
 
                 //convertimos de la clase al dto
-                var result = await this.servicioFechasOfertaRepository.ListAsync(spec);
+                var result = await servicioFechasOfertaRepository.ListAsync(spec);
                 var resultDto = mapper.Map<List<GetServicioFechaOfertaDto>>(result);
 
                 //seteamos el resultado

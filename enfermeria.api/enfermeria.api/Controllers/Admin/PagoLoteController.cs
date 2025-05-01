@@ -17,9 +17,9 @@ using enfermeria.api.Models.DTO;
 using enfermeria.api.Models.Specifications;
 using DocumentFormat.OpenXml.Drawing.Charts;
 
-namespace enfermeria.api.Controllers
+namespace enfermeria.api.Controllers.Admin
 {
-    [Route("api/[controller]")]
+    [Route("api/admin/[controller]")]
     [ApiController]
     public class PagoLoteController : ControllerBase
     {
@@ -47,13 +47,13 @@ namespace enfermeria.api.Controllers
         public async Task<IActionResult> CrearPagoLote([FromBody] CrearPagoLoteDto dto)
         {
             var response = new ResponseModel_2<Paciente>();
-            
+
 
             if (dto.FechaInicio > dto.FechaFin)
             {
                 return BadRequest("La fecha de inicio no puede ser mayor a la fecha de termino.");
             }
-            
+
             // Validar si el modelo es válido
             if (!ModelState.IsValid)
             {
@@ -64,31 +64,32 @@ namespace enfermeria.api.Controllers
             try
             {
                 //iniciamos la transaccion
-                using var transaction = await this._context.Database.BeginTransactionAsync();
+                using var transaction = await _context.Database.BeginTransactionAsync();
                 //obtenemos los valores para el calculo de comisiones
-                
+
                 // Mapea el DTO a la entidad Paciente
                 var result = mapper.Map<PagoLote>(dto);
                 result.UsuarioCreacion = Guid.Parse(User.GetId());
                 result.Pagos = new List<Pago>();
-                
+
                 foreach (var item in dto.Pagos)
                 {
-                    var servicioFecha = await this.servicioFechasRepository.GetByIdAsync(item);
+                    var servicioFecha = await servicioFechasRepository.GetByIdAsync(item);
 
-                    var configuraciones = await this.configuracionRepository.ListAsync();
-                    var colaborador = await this.colaboradorRepository.GetByIdAsync((Guid)servicioFecha.ColaboradorAsignadoId);
+                    var configuraciones = await configuracionRepository.ListAsync();
+                    var colaborador = await colaboradorRepository.GetByIdAsync((Guid)servicioFecha.ColaboradorAsignadoId);
 
                     decimal costosOperativos = (decimal)configuraciones.Where(x => x.Id == 10).FirstOrDefault().ValorDecimal;
                     decimal retenciones = (decimal)configuraciones.Where(x => x.Id == 11).FirstOrDefault().ValorDecimal;
 
                     //actualizamos el servicio fecha con los datos correctos de comision, gastos operativos y retenciones
-                    servicioFecha.Comision = (servicioFecha.Total - servicioFecha.Descuento) * (colaborador.Comision / Decimal.Parse("100"));
-                    servicioFecha.CostosOperativos = (servicioFecha.Total - servicioFecha.Descuento) * (costosOperativos / Decimal.Parse("100"));
-                    servicioFecha.Retenciones = (servicioFecha.Total - servicioFecha.Descuento) * (retenciones / Decimal.Parse("100"));
+                    servicioFecha.Comision = (servicioFecha.Total - servicioFecha.Descuento) * (colaborador.Comision / decimal.Parse("100"));
+                    servicioFecha.CostosOperativos = (servicioFecha.Total - servicioFecha.Descuento) * (costosOperativos / decimal.Parse("100"));
+                    servicioFecha.Retenciones = (servicioFecha.Total - servicioFecha.Descuento) * (retenciones / decimal.Parse("100"));
                     servicioFecha.ImporteBruto = servicioFecha.Total - servicioFecha.Descuento - servicioFecha.Comision - servicioFecha.Retenciones - servicioFecha.CostosOperativos;
 
-                    result.Pagos.Add(new Pago() {
+                    result.Pagos.Add(new Pago()
+                    {
                         ServicioFechaId = servicioFecha.Id,
                         ImporteBruto = servicioFecha.Total,
                         Comision = servicioFecha.Comision,
@@ -99,18 +100,18 @@ namespace enfermeria.api.Controllers
                         EstatusPagoId = (int)EstatusPagoEnum.PorPagar,
                         Activo = true,
                         FechaCreacion = DateTime.Now,
-                        UsuarioCreacion =Guid.Parse(User.GetId()),
-                        
+                        UsuarioCreacion = Guid.Parse(User.GetId()),
+
                     });
 
                     //marcamos pagado el serviciofecha
                     servicioFecha.EstatusServicioFechaId = (int)EstatusServicioFechaEnum.Pagado;
-                    await this.servicioFechasRepository.UpdateAsync(servicioFecha);
+                    await servicioFechasRepository.UpdateAsync(servicioFecha);
                 }
 
                 // Devolver la respuesta con el nuevo paciente
-                
-                await this.pagoLoteRepository.AddAsync(result);
+
+                await pagoLoteRepository.AddAsync(result);
                 await transaction.CommitAsync(); // 💾 Confirma todo si no falló nada
                 return Ok();
             }
@@ -136,7 +137,7 @@ namespace enfermeria.api.Controllers
             DateTime? fechaInicio = null;
             DateTime? fechaFin = null;
 
-            if(model.Periodo != null)
+            if (model.Periodo != null)
             {
                 fechaInicio = new DateTime(model.Periodo.Value.Year, model.Periodo.Value.Month, 1);
                 fechaFin = fechaInicio.Value.AddMonths(1).AddDays(-1);
@@ -145,7 +146,7 @@ namespace enfermeria.api.Controllers
             {
                 FechaInicio = fechaInicio,
                 FechaFin = fechaFin,
-                EstatusPagoLoteId= model.EstatusPagoLoteId
+                EstatusPagoLoteId = model.EstatusPagoLoteId
             };
 
 
@@ -162,7 +163,7 @@ namespace enfermeria.api.Controllers
                 spec.IncludeStrings = new List<string> { "EstatosPagoLote", "Pagos", "Pagos.ServicioFecha", "Pagos.ServicioFecha.ColaboradorAsignado" };
 
                 //convertimos de la clase al dto
-                var result = await this.pagoLoteRepository.ListAsync(spec);
+                var result = await pagoLoteRepository.ListAsync(spec);
                 var resultDto = mapper.Map<List<GetPagoLoteResponse>>(result);
 
                 //seteamos el resultado
@@ -215,7 +216,7 @@ namespace enfermeria.api.Controllers
                     await dto.Documento.CopyToAsync(stream);
 
                     rutaPublica = pathCompleto;
-                    
+
 
 
                 }
@@ -247,37 +248,37 @@ namespace enfermeria.api.Controllers
                 var spec = new PagoSpecification(filtro);
 
                 spec.IncludeStrings = new List<string> { "ServicioFecha" };
-                
-                var result = await this.pagoRepository.ListAsync(spec);
+
+                var result = await pagoRepository.ListAsync(spec);
                 var resultFiltrado = result.Where(x => x.ServicioFecha.ColaboradorAsignadoId == dto.ColaboradorId);
 
                 totalPago = resultFiltrado.Sum(x => x.Total);
 
-                if(result.Where(x=>x.Referencia == dto.Referencia).Any())
+                if (result.Where(x => x.Referencia == dto.Referencia).Any())
                 {
                     return BadRequest("La referencia ya se encuentra registrada.");
                 }
-                if(totalPago != dto.Monto)
+                if (totalPago != dto.Monto)
                 {
-                    return BadRequest($"El monto del pago { dto.Monto.ToString("C")} no corresponde al monto del deposito calculado {totalPago.ToString("C")}.");
+                    return BadRequest($"El monto del pago {dto.Monto.ToString("C")} no corresponde al monto del deposito calculado {totalPago.ToString("C")}.");
                 }
                 //iniciamos la transaccion
-                using var transaction = await this._context.Database.BeginTransactionAsync();
-                foreach(var pago in resultFiltrado)
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                foreach (var pago in resultFiltrado)
                 {
                     pago.FechaPago = DateTime.Now;
                     pago.Comprobante = rutaPublica;
                     pago.Referencia = dto.Referencia;
                     pago.EstatusPagoId = (int)EstatusPagoEnum.Pagado;
-                    await this.pagoRepository.UpdateAsync(pago);
+                    await pagoRepository.UpdateAsync(pago);
                 }
 
-                result = await this.pagoRepository.ListAsync(spec);
-                if(result.Where(x=>x.EstatusPagoId == 2).Count() == result.Count())
+                result = await pagoRepository.ListAsync(spec);
+                if (result.Where(x => x.EstatusPagoId == 2).Count() == result.Count())
                 {
-                    var pagoLote = await this.pagoLoteRepository.GetByIdAsync(dto.PagoLoteId);
+                    var pagoLote = await pagoLoteRepository.GetByIdAsync(dto.PagoLoteId);
                     pagoLote.EstatosPagoLoteId = (int)EstatusPagoLoteEnum.Pagado;
-                    await this.pagoLoteRepository.UpdateAsync(pagoLote);
+                    await pagoLoteRepository.UpdateAsync(pagoLote);
                 }
                 await transaction.CommitAsync(); // 💾 Confirma todo si no falló nada
                 return Ok();
@@ -332,8 +333,8 @@ namespace enfermeria.api.Controllers
                 spec.IncludeStrings = new List<string> { "ServicioFecha", "ServicioFecha.ColaboradorAsignado", "EstatusPago" };
 
                 //convertimos de la clase al dto
-                var result = await this.pagoRepository.ListAsync(spec);
-                var pago = result.Where(x=>x.Referencia == referencia).FirstOrDefault();
+                var result = await pagoRepository.ListAsync(spec);
+                var pago = result.Where(x => x.Referencia == referencia).FirstOrDefault();
 
 
                 var filePath = pago.Comprobante;

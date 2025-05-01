@@ -10,9 +10,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using enfermeria.api.Models.DTO.CatMunicipio;
 
-namespace enfermeria.api.Controllers
+namespace enfermeria.api.Controllers.Admin
 {
-    [Route("api/[controller]")]
+    [Route("api/admin/[controller]")]
     [ApiController]
     public class MunicipioController : ControllerBase
     {
@@ -42,7 +42,7 @@ namespace enfermeria.api.Controllers
                 var spec = new CatMunicipioSpecification(filtro);
 
                 //convertimos de la clase al dto
-                var pacientes = await this.municipioRepository.ListAsync(spec);
+                var pacientes = await municipioRepository.ListAsync(spec);
                 var pacientesDto = mapper.Map<List<GetMunicipioDto>>(pacientes);
 
                 //seteamos el resultado

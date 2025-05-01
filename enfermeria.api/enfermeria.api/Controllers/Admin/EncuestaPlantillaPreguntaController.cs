@@ -1,37 +1,73 @@
 ﻿using AutoMapper;
-using enfermeria.api.Helpers;
-using enfermeria.api.Models.Domain;
+using enfermeria.api.Models.DTO.EncuestaPlantilla;
 using enfermeria.api.Models.DTO.Paciente;
 using enfermeria.api.Models;
-using enfermeria.api.Repositories.Implementation;
 using enfermeria.api.Repositories.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using enfermeria.api.Models.DTO.EncuestaPlantilla;
-using enfermeria.api.Models.DTO;
-using enfermeria.api.Models.Specifications;
+using enfermeria.api.Models.DTO.EncuestaPlantillaPregunta;
+using enfermeria.api.Helpers;
+using enfermeria.api.Models.Domain;
+using DocumentFormat.OpenXml.Office.PowerPoint.Y2021.M06.Main;
 
-namespace enfermeria.api.Controllers
+namespace enfermeria.api.Controllers.Admin
 {
-    [Route("api/[controller]")]
+    [Route("api/admin/[controller]")]
     [ApiController]
-    public class EncuestaPlantillaController : ControllerBase
+    public class EncuestaPlantillaPreguntaController : ControllerBase
     {
         private readonly IMapper mapper;
-        private readonly IEncuestaPlantillaRepository encuestaPlantillaRepository;
+        private readonly IEncuestaPlantillaPreguntaRepository encuestaPlantillaPreguntaRepository;
 
-        public EncuestaPlantillaController(IEncuestaPlantillaRepository encuestaPlantillaRepository, IMapper mapper)
+        public EncuestaPlantillaPreguntaController(IEncuestaPlantillaPreguntaRepository encuestaPlantillaPreguntaRepository, IMapper mapper)
         {
-            this.encuestaPlantillaRepository = encuestaPlantillaRepository;
+            this.encuestaPlantillaPreguntaRepository = encuestaPlantillaPreguntaRepository;
             this.mapper = mapper;
+        }
+
+        [HttpGet("{plantillaId}")]
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> GetEncuestaPlantillaPregunta(Guid plantillaId)
+        {
+            //creamos la respuesta
+            var response = new ResponseModel_2<List<GetEncuestaPlantillaPreguntaDto>>();
+
+            try
+            {
+                //convertimos de la clase al dto
+                var pacientes = await encuestaPlantillaPreguntaRepository.ListAsync();
+                pacientes = pacientes.Where(x => x.PlantillaId == plantillaId).ToList();
+
+                var pacientesDto = mapper.Map<List<GetEncuestaPlantillaPreguntaDto>>(pacientes);
+
+                //seteamos el resultado
+                response.SetResponse(true, "");
+                response.Result = pacientesDto;
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                // Si ocurre una excepción, manejar el error
+                response.SetResponse(false, "Ocurrió un error al crear el paciente.");
+
+                // Puedes registrar el error o manejarlo como desees, por ejemplo:
+                // Log.Error(ex, "Error al crear paciente");
+
+                // Devolver una respuesta con el error
+                response.Data = ex.Message; // Puedes agregar más detalles del error si lo deseas
+                return StatusCode(500, response); // O devolver un BadRequest(400) si el error es de entrada
+            }
+
+
         }
 
         [HttpPost]
         [Authorize(Roles = "Administrador")]
-        public async Task<IActionResult> CrearEncuestaPlantlla([FromBody] CrearEncuestaPlantillaDto dto)
+        public async Task<IActionResult> CrearEncuestaPlantillaPregunta([FromBody] CrearEncuestaPlantillaPreguntaDto dto)
         {
-            var response = new ResponseModel_2<CrearEncuestaPlantillaDto>();
+            var response = new ResponseModel_2<CrearEncuestaPlantillaPreguntaDto>();
 
             // Validar si el modelo es válido
             if (!ModelState.IsValid)
@@ -44,14 +80,14 @@ namespace enfermeria.api.Controllers
             try
             {
                 // Mapea el DTO a la entidad Paciente
-                var paciente = mapper.Map<EncuestaPlantilla>(dto);
+                var paciente = mapper.Map<EncuestaPlantillaPreguntum>(dto);
                 paciente.UsuarioCreacion = Guid.Parse(User.GetId());
-
+                paciente.FechaCreacion = DateTime.Now;
                 // Agregar el paciente al repositorio
-                await this.encuestaPlantillaRepository.AddAsync(paciente);
+                await encuestaPlantillaPreguntaRepository.AddAsync(paciente);
 
                 // Establecer la respuesta de éxito
-                response.SetResponse(true, "Encuesta creada correctamente.");
+                response.SetResponse(true, "Pregunta creada correctamente.");
 
                 // Devolver la respuesta con el nuevo paciente
                 return Ok(response);
@@ -69,72 +105,6 @@ namespace enfermeria.api.Controllers
                 return StatusCode(500, response); // O devolver un BadRequest(400) si el error es de entrada
             }
         }
-
-        [HttpGet]
-        [Authorize(Roles = "Administrador")]
-        public async Task<IActionResult> GetEncuestas()
-        {
-            //creamos la respuesta
-            var response = new ResponseModel_2<List<GetPacienteDto>>();
-           
-            try
-            {
-                //convertimos de la clase al dto
-                var pacientes = await this.encuestaPlantillaRepository.ListAsync();
-                var pacientesDto = mapper.Map<List<GetEncuestasPlantillaDto>>(pacientes);
-
-                //seteamos el resultado
-                response.SetResponse(true, "");
-
-                return Ok(pacientesDto);
-            }
-            catch (Exception ex)
-            {
-                // Si ocurre una excepción, manejar el error
-                response.SetResponse(false, "Ocurrió un error al crear el paciente.");
-
-                // Puedes registrar el error o manejarlo como desees, por ejemplo:
-                // Log.Error(ex, "Error al crear paciente");
-
-                // Devolver una respuesta con el error
-                response.Data = ex.Message; // Puedes agregar más detalles del error si lo deseas
-                return StatusCode(500, response); // O devolver un BadRequest(400) si el error es de entrada
-            }
-
-
-        }
-
-        [Authorize(Roles = "Administrador")]
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateEncuesta(Guid id, [FromBody] CrearEncuestaPlantillaDto dto)
-        {
-            var response = new ResponseModel_2<GetPacienteDto>();
-
-            try
-            {
-                // Validamos que el id en la ruta coincida con el del body
-                var paciente = await this.encuestaPlantillaRepository.GetByIdAsync(id);
-                if (paciente == null)
-                {
-                    return NotFound("Paciente no encontrado.");
-                }
-
-                // Mapear solo los campos permitidos del DTO a la entidad
-                mapper.Map(dto, paciente);
-
-
-                await this.encuestaPlantillaRepository.UpdateAsync(paciente);
-
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                response.SetResponse(false, "Ocurrió un error al actualizar el paciente.");
-                response.Data = ex.Message;
-                return StatusCode(500, response);
-            }
-        }
-
         [Authorize(Roles = "Administrador")]
         [HttpPut("{id}/desactivar")]
         public async Task<IActionResult> Desactivar(Guid id)
@@ -146,7 +116,7 @@ namespace enfermeria.api.Controllers
                 // Obtener el paciente actual desde la base de datos
                 UpdatePacienteDto dto;
 
-                var paciente = await this.encuestaPlantillaRepository.GetByIdAsync(id);
+                var paciente = await encuestaPlantillaPreguntaRepository.GetByIdAsync(id);
                 if (paciente == null)
                 {
                     return NotFound("Paciente no encontrado.");
@@ -158,8 +128,7 @@ namespace enfermeria.api.Controllers
                 paciente.FechaModificacion = DateTime.Now;
                 // Guardamos los cambios
 
-                await this.encuestaPlantillaRepository.UpdateAsync(paciente);
-
+                await encuestaPlantillaPreguntaRepository.UpdateAsync(paciente);
                 return NoContent(); // Respuesta exitosa sin contenido
             }
             catch (Exception ex)
@@ -185,22 +154,16 @@ namespace enfermeria.api.Controllers
 
             try
             {
-                var encuestas = await this.encuestaPlantillaRepository.ListAsync();
+                var encuestas = await encuestaPlantillaPreguntaRepository.ListAsync();
 
-                if (encuestas.Where(x=> x.Activo == true).Count() >= 1)
-                {
-                    response.SetResponse(false, "No es posible tener mas de una encuesta activa.");
-                    return StatusCode(500, response);
-                }
-
-                var paciente = await this.encuestaPlantillaRepository.GetByIdAsync(id);
+                var paciente = await encuestaPlantillaPreguntaRepository.GetByIdAsync(id);
                 if (paciente == null)
                     return NotFound();
 
                 paciente.Activo = true;
                 paciente.UsuarioModificacion = Guid.Parse(User.GetId());
                 paciente.FechaModificacion = DateTime.Now;
-                await this.encuestaPlantillaRepository.UpdateAsync(paciente);
+                await encuestaPlantillaPreguntaRepository.UpdateAsync(paciente);
 
                 return NoContent();
             }
@@ -217,6 +180,37 @@ namespace enfermeria.api.Controllers
                 return StatusCode(500, response); // O devolver un BadRequest(400) si el error es de entrada
             }
 
+        }
+
+        [Authorize(Roles = "Administrador")]
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateEncuestaPregunta(Guid id, [FromBody] CrearEncuestaPlantillaPreguntaDto dto)
+        {
+            var response = new ResponseModel_2<GetPacienteDto>();
+
+            try
+            {
+                // Validamos que el id en la ruta coincida con el del body
+                var paciente = await encuestaPlantillaPreguntaRepository.GetByIdAsync(id);
+                if (paciente == null)
+                {
+                    return NotFound("Paciente no encontrado.");
+                }
+
+                // Mapear solo los campos permitidos del DTO a la entidad
+                mapper.Map(dto, paciente);
+
+
+                await encuestaPlantillaPreguntaRepository.UpdateAsync(paciente);
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                response.SetResponse(false, "Ocurrió un error al actualizar el paciente.");
+                response.Data = ex.Message;
+                return StatusCode(500, response);
+            }
         }
     }
 }

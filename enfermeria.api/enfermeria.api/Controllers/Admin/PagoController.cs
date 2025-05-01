@@ -11,9 +11,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using enfermeria.api.Models.DTO.Pago;
 
-namespace enfermeria.api.Controllers
+namespace enfermeria.api.Controllers.Admin
 {
-    [Route("api/[controller]")]
+    [Route("api/admin/[controller]")]
     [ApiController]
     public class PagoController : ControllerBase
     {
@@ -52,7 +52,7 @@ namespace enfermeria.api.Controllers
                 spec.IncludeStrings = new List<string> { "ServicioFecha", "ServicioFecha.ColaboradorAsignado", "ServicioFecha.ColaboradorAsignado.Banco", "EstatusPago" };
 
                 //convertimos de la clase al dto
-                var result = await this.pagoRepository.ListAsync(spec);
+                var result = await pagoRepository.ListAsync(spec);
                 var resultDto = mapper.Map<List<GetDepositosDto>>(result);
 
                 //seteamos el resultado
@@ -62,13 +62,13 @@ namespace enfermeria.api.Controllers
                 var agrupados = resultDto
                 .GroupBy(x => new
                 {
-                    PagoLoteId = x.PagoLoteId,
-                    ColaboradorId = x.ColaboradorId,
-                    Banco = x.Banco,
-                    Clabe = x.Clabe,
-                    Beneficiario = x.Beneficiario,
-                    Referencia = x.Referencia,
-                    Pagado = x.Pagado
+                    x.PagoLoteId,
+                    x.ColaboradorId,
+                    x.Banco,
+                    x.Clabe,
+                    x.Beneficiario,
+                    x.Referencia,
+                    x.Pagado
                 })
                 .Select(g => new GetDepositosDto
                 {
@@ -126,7 +126,7 @@ namespace enfermeria.api.Controllers
                 spec.IncludeStrings = new List<string> { "ServicioFecha", "ServicioFecha.ColaboradorAsignado", "EstatusPago" };
 
                 //convertimos de la clase al dto
-                var result = await this.pagoRepository.ListAsync(spec);
+                var result = await pagoRepository.ListAsync(spec);
                 var resultDto = mapper.Map<List<GetPagosDto>>(result);
 
                 //seteamos el resultado
