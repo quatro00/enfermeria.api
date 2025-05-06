@@ -10,6 +10,7 @@
     using enfermeria.api.Models.DTO.Contacto;
     using enfermeria.api.Models.DTO.EncuestaPlantilla;
     using enfermeria.api.Models.DTO.EncuestaPlantillaPregunta;
+    using enfermeria.api.Models.DTO.Estado;
     using enfermeria.api.Models.DTO.Mensaje;
     using enfermeria.api.Models.DTO.Paciente;
     using enfermeria.api.Models.DTO.Pago;
@@ -22,6 +23,61 @@
     {
         public MappingProfile()
         {
+            CreateMap<ServicioFecha, GetServiciosDisponiblesDto>()
+               .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+               .ForMember(dest => dest.Motivo, opt => opt.MapFrom(src => src.Servicio.PrincipalRazon))
+               .ForMember(dest => dest.No, opt => opt.MapFrom(src => src.Servicio.No))
+               .ForMember(dest => dest.Direccion, opt => opt.MapFrom(src => src.Servicio.Direccion))
+               .ForMember(dest => dest.Ciudad, opt => opt.MapFrom(src => src.Servicio.Municipio.NombreCorto))
+               .ForMember(dest => dest.Estado, opt => opt.MapFrom(src => src.Servicio.Municipio.Estado.NombreCorto))
+               .ForMember(dest => dest.FechaInicio, opt => opt.MapFrom(src => src.FechaInicio))
+               .ForMember(dest => dest.FechaTermino, opt => opt.MapFrom(src => src.FechaTermino))
+               .ForMember(dest => dest.importe, opt => opt.MapFrom(src => src.Total - src.Descuento - src.Retenciones - src.CostosOperativos - src.Comision))
+               
+               .ForMember(dest => dest.RequiereAyudaBasica, opt => opt.MapFrom(src => src.Servicio.RequiereAyudaBasica))
+               .ForMember(dest => dest.RequiereAyudaBasicaDesc, opt => opt.MapFrom(src => src.Servicio.RequiereAyudaBasicaDesc))
+
+               .ForMember(dest => dest.EnfermedadDiagnosticada, opt => opt.MapFrom(src => src.Servicio.EnfermedadDiagnosticada))
+               .ForMember(dest => dest.EnfermedadDiagnosticadaDesc, opt => opt.MapFrom(src => src.Servicio.EnfermedadDiagnosticadaDesc))
+
+               .ForMember(dest => dest.TomaMedicamento, opt => opt.MapFrom(src => src.Servicio.TomaMedicamento))
+               .ForMember(dest => dest.TomaMedicamentoDesc, opt => opt.MapFrom(src => src.Servicio.TomaMedicamentoDesc))
+
+
+               .ForMember(dest => dest.RequiereCuraciones, opt => opt.MapFrom(src => src.Servicio.RequiereCuraciones))
+               .ForMember(dest => dest.RequiereCuracionesDesc, opt => opt.MapFrom(src => src.Servicio.RequiereCuracionesDesc))
+
+               .ForMember(dest => dest.DispositivosMedicos, opt => opt.MapFrom(src => src.Servicio.DispositivosMedicos))
+               .ForMember(dest => dest.DispositivosMedicosDesc, opt => opt.MapFrom(src => src.Servicio.DispositivosMedicosDesc))
+
+               .ForMember(dest => dest.RequiereMonitoreo, opt => opt.MapFrom(src => src.Servicio.RequiereMonitoreo))
+               .ForMember(dest => dest.RequiereMonitoreoDesc, opt => opt.MapFrom(src => src.Servicio.RequiereMonitoreoDesc))
+
+               .ForMember(dest => dest.CuidadosNocturnos, opt => opt.MapFrom(src => src.Servicio.CuidadosNocturnos))
+               .ForMember(dest => dest.CuidadosNocturnosDesc, opt => opt.MapFrom(src => src.Servicio.CuidadosNocturnosDesc))
+
+               .ForMember(dest => dest.RequiereAtencionNeurologica, opt => opt.MapFrom(src => src.Servicio.RequiereAtencionNeurologica))
+               .ForMember(dest => dest.RequiereAtencionNeurologicaDesc, opt => opt.MapFrom(src => src.Servicio.RequiereAtencionNeurologicaDesc))
+
+               .ForMember(dest => dest.RequiereCuidadosCriticos, opt => opt.MapFrom(src => src.Servicio.RequiereCuidadosCriticos))
+               .ForMember(dest => dest.RequiereCuidadosCriticosDesc, opt => opt.MapFrom(src => src.Servicio.RequiereCuidadosCriticosDesc))
+
+               .ForMember(dest => dest.TipoEnfermera, opt => opt.MapFrom(src => src.Servicio.TipoEnfermera.Descripcion))
+               .ForMember(dest => dest.TipoLugar, opt => opt.MapFrom(src => src.Servicio.TipoLugar.Descripcion))
+               .ForMember(dest => dest.Observaciones, opt => opt.MapFrom(src => src.Servicio.Observaciones))
+               .ForMember(dest => dest.Horas, opt => opt.MapFrom(src => src.CantidadHoras))
+               .ForMember(dest => dest.Total, opt => opt.MapFrom(src => src.Total - src.Descuento - src.Retenciones - src.CostosOperativos - src.Comision))
+            ;
+
+            CreateMap<CatEstado, EstadoDto>()
+               .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+               .ForMember(dest => dest.Nombre, opt => opt.MapFrom(src => src.Nombre))
+               .ForMember(dest => dest.NombreCorto, opt => opt.MapFrom(src => src.NombreCorto))
+               .ForMember(dest => dest.Municipios, opt => opt.MapFrom(src => src.CatMunicipios));
+            ;
+
+            CreateMap<CatMunicipio, EstadoMunicipioDto>();
+
             CreateMap<CrearMensajeDto, Mensaje>()
                .ForMember(dest => dest.FechaCreacion, opt => opt.MapFrom(src => DateTime.Now))
                .ForMember(dest => dest.Mensaje1, opt => opt.MapFrom(src => src.Mensaje))
