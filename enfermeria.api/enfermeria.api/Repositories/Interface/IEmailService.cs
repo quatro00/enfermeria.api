@@ -1,4 +1,5 @@
-﻿using enfermeria.api.Models.DTO.Mail;
+﻿using enfermeria.api.Models.Domain;
+using enfermeria.api.Models.DTO.Mail;
 
 namespace enfermeria.api.Repositories.Interface
 {
@@ -6,5 +7,7 @@ namespace enfermeria.api.Repositories.Interface
     {
         Task SendEmailAsync(EmailRequest request, string paymentUrl);
         Task SendEmailAsync_Cuenta(EmailRequest request, string cuenta);
+
+        Task SendEmailAsync_NuevoMensaje(Mensaje mensaje);
     }
 }

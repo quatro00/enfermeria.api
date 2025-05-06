@@ -93,6 +93,7 @@ builder.Services.AddScoped<IEncuestaPlantillaPreguntaRepository, EncuestaPlantil
 builder.Services.AddScoped<IPagoLoteRepository, PagoLoteRepository>();
 builder.Services.AddScoped<IPagoRepository, PagoRepository>();
 builder.Services.AddScoped<IMunicipioRepository, MunicipioRepository>();
+builder.Services.AddScoped<IMensajeRepository, MensajeRepository>();
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 

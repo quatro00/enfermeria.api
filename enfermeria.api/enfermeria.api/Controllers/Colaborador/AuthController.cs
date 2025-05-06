@@ -1,15 +1,13 @@
-﻿using enfermeria.api.Helpers;
-using enfermeria.api.Models.DTO.Auth;
+﻿using enfermeria.api.Models.DTO.Auth;
 using enfermeria.api.Models.DTO.Usuarios;
 using enfermeria.api.Repositories.Interface;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
-namespace enfermeria.api.Controllers.Admin
+namespace enfermeria.api.Controllers.Colaborador
 {
-    [Route("api/admin/[controller]")]
+    [Route("api/colaborador/[controller]")]
     [ApiController]
     public class AuthController : ControllerBase
     {
@@ -22,61 +20,6 @@ namespace enfermeria.api.Controllers.Admin
             this.userManager = userManager;
             this.tokenRepository = tokenRepository;
             this.aspNetUsersRepository = aspNetUsersRepository;
-        }
-
-        [HttpPost]
-        [Route("forgot-password")]
-        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequestDto request)
-        {
-            var identityUser = await userManager.FindByEmailAsync(request.Email);
-
-            if (identityUser is not null)
-            {
-                var token = await userManager.GeneratePasswordResetTokenAsync(identityUser);
-                var response = await aspNetUsersRepository.ForgotPassword(request, token);
-
-                if (!response.response)
-                {
-                    ModelState.AddModelError("error", response.message);
-                    return ValidationProblem(ModelState);
-                }
-
-                return Ok(response.result);
-
-            }
-
-            ModelState.AddModelError("error", "Usuario no encontrado.");
-            return ValidationProblem(ModelState);
-        }
-
-        [HttpPatch]
-        [Route("restore-password")]
-        [Authorize(Roles = "Administrador")]
-        public async Task<IActionResult> RestorePassword([FromBody] RestorePasswordRequestDto request)
-        {
-            var identityUser = await userManager.FindByIdAsync(User.GetId());
-            var response = await userManager.ResetPasswordAsync(identityUser, request.token, request.newPassword);
-
-            if (response.Errors.Count() > 0)
-            {
-                ModelState.AddModelError("error", "");
-                return ValidationProblem(ModelState);
-            }
-
-            return Ok(response.Succeeded);
-        }
-
-
-        [HttpPost]
-        [Route("change-password")]
-
-
-        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequestDto request)
-        {
-            var identityUser = await userManager.FindByNameAsync(request.username);
-            var changuePassword = await userManager.ChangePasswordAsync(identityUser!, request.currentPassword, request.newPassword);
-
-            return Ok(changuePassword);
         }
 
         [HttpPost]
@@ -101,7 +44,7 @@ namespace enfermeria.api.Controllers.Admin
                 if (checkPasswordResult)
                 {
                     var roles = await userManager.GetRolesAsync(identityUser);
-                    if(roles.IndexOf("Administrador")== -1)
+                    if (roles.IndexOf("Colaborador") == -1)
                     {
                         ModelState.AddModelError("error", "Email o password incorrecto.");
                         return ValidationProblem(ModelState);

@@ -68,6 +68,8 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
 
     public virtual DbSet<EstatusColaborador> EstatusColaboradors { get; set; }
 
+    public virtual DbSet<Mensaje> Mensajes { get; set; }
+
     public virtual DbSet<Paciente> Pacientes { get; set; }
 
     public virtual DbSet<Pago> Pagos { get; set; }
@@ -288,6 +290,7 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
             entity.Property(e => e.Nombre).HasMaxLength(500);
             entity.Property(e => e.Rfc).HasMaxLength(500);
             entity.Property(e => e.Telefono).HasMaxLength(500);
+            entity.Property(e => e.UserId).HasMaxLength(450);
 
             entity.HasOne(d => d.Banco).WithMany(p => p.Colaboradors)
                 .HasForeignKey(d => d.BancoId)
@@ -303,6 +306,10 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
                 .HasForeignKey(d => d.TipoEnfermeraId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Colaborador_CatTipoEnfermera");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Colaboradors)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("FK_Colaborador_AspNetUsers");
         });
 
         modelBuilder.Entity<ColaboradorDocumento>(entity =>
@@ -398,6 +405,21 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Descripcion).HasMaxLength(150);
+        });
+
+        modelBuilder.Entity<Mensaje>(entity =>
+        {
+            entity.ToTable("Mensaje");
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newsequentialid())");
+            entity.Property(e => e.CorreoElectronico).HasMaxLength(250);
+            entity.Property(e => e.FechaCreacion).HasColumnType("datetime");
+            entity.Property(e => e.Mensaje1)
+                .HasMaxLength(500)
+                .HasColumnName("Mensaje");
+            entity.Property(e => e.No).ValueGeneratedOnAdd();
+            entity.Property(e => e.Nombre).HasMaxLength(250);
+            entity.Property(e => e.Telefono).HasMaxLength(250);
         });
 
         modelBuilder.Entity<Paciente>(entity =>

@@ -2,13 +2,14 @@
 using enfermeria.api.Repositories.Interface;
 using System.Net.Mail;
 using System.Net;
+using enfermeria.api.Models.Domain;
 
 namespace enfermeria.api.Repositories.Implementation
 {
     public class EmailService : IEmailService
     {
         private readonly EmailSettings _settings;
-
+        string nombreNegocio = "Enfermería MC";
         string token = "abcdef123456"; // Este es tu token único generado para esa cotización
         string cotizacionId = ""; // ID de la cotización, si lo necesitas como parte de validación
 
@@ -30,7 +31,7 @@ namespace enfermeria.api.Repositories.Implementation
 
                 <h2 style='color: #2c3e50;'>¡Hola!</h2>
                 <p style='font-size: 16px; color: #333;'>
-                  Reciba un cordial saludo de parte de <strong style='color: #2980b9;'>Enfermería AlfaCare</strong>.
+                  Reciba un cordial saludo de parte de <strong style='color: #2980b9;'>{nombreNegocio}</strong>.
                 </p>
 
                 <p style='font-size: 16px; color: #333;'>
@@ -106,7 +107,7 @@ namespace enfermeria.api.Repositories.Implementation
 
                 <h2 style='color: #2c3e50;'>¡Hola!</h2>
                 <p style='font-size: 16px; color: #333;'>
-                  Reciba un cordial saludo de parte de <strong style='color: #2980b9;'>Enfermería AlfaCare</strong>.
+                  Reciba un cordial saludo de parte de <strong style='color: #2980b9;'>{nombreNegocio}</strong>.
                 </p>
 
                 <p style='font-size: 16px; color: #333;'>
@@ -154,6 +155,65 @@ namespace enfermeria.api.Repositories.Implementation
             {
                 message.Attachments.Add(attachment);
             }
+
+            using var smtp = new SmtpClient(_settings.Dominio)
+            {
+                Port = _settings.Puerto,
+                Credentials = new NetworkCredential(_settings.Usuario, _settings.Contrasena),
+                EnableSsl = _settings.EnableSsl
+            };
+
+            await smtp.SendMailAsync(message);
+        }
+
+        public async Task SendEmailAsync_NuevoMensaje(Mensaje mensaje)
+        {
+            string htmlBody = $@"
+            <div style='font-family: Arial, sans-serif; background-color: #f5f5f5; padding: 30px;'>
+              <div style='max-width: 600px; margin: auto; background-color: white; border-radius: 8px; padding: 30px; box-shadow: 0 0 10px rgba(0,0,0,0.05);'>
+
+                <h2 style='color: #2c3e50;'>¡Hola!</h2>
+                <p style='font-size: 16px; color: #333;'>
+                  Has recibido un mensaje nuevo del portal <strong style='color: #2980b9;'>{nombreNegocio}</strong>.
+                </p>
+
+                <p style='font-size: 16px; color: #333;'>
+                    <strong>No.</strong> {mensaje.No.ToString()} <br>
+                    <strong>Nombre</strong> {mensaje.Nombre.ToString()} <br>
+                    <strong>Correo electrónico</strong> {mensaje.CorreoElectronico.ToString()} <br>
+                    <strong>Teléfono</strong> {mensaje.Telefono.ToString()} <br>
+                </p>
+
+                <p style='font-size: 16px; color: #333;'>
+                  <strong>Mensaje:</strong> { mensaje.Mensaje1 }
+                </p>
+
+
+                <hr style='margin: 30px 0; border: none; border-top: 1px solid #ddd;'>
+
+                <p style='font-size: 14px; color: #555;'>
+                  <strong>Enfermería AlfaCare</strong><br>
+                  Av. Salud 123, Colonia Bienestar, Monterrey, NL, México<br>
+                  Tel: <a href='tel:8180000000' style='color: #2980b9;'>(81) 8000-0000</a> | <a href='tel:8123456789' style='color: #2980b9;'>(81) 2345-6789</a><br>
+                  Correo: <a href='mailto:contacto@alfacare.com' style='color: #2980b9;'>contacto@alfacare.com</a><br>
+                  Sitio web: <a href='https://www.alfacare.com' style='color: #2980b9;'>www.alfacare.com</a>
+                </p>
+
+                <p style='font-size: 13px; color: #aaa; text-align: center; margin-top: 40px;'>
+                  © 2025 Enfermería AlfaCare. Todos los derechos reservados.
+                </p>
+              </div>
+            </div>";
+
+            using var message = new MailMessage
+            {
+                From = new MailAddress(_settings.Usuario),
+                Subject = "Nuevo mensaje #" + mensaje.No.ToString(),
+                Body = htmlBody,
+                IsBodyHtml = true
+            };
+
+            message.To.Add("josecarlosgarciadiaz@gmail.com");
 
             using var smtp = new SmtpClient(_settings.Dominio)
             {

@@ -14,6 +14,9 @@ using enfermeria.api.Models.DTO;
 using enfermeria.api.Models.Specifications;
 using System;
 using DocumentFormat.OpenXml.Office.CustomUI;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using enfermeria.api.Data;
 
 namespace enfermeria.api.Controllers.Admin
 {
@@ -24,12 +27,14 @@ namespace enfermeria.api.Controllers.Admin
         private readonly IMapper mapper;
         private readonly IColaboradorRepository colaboradorRepository;
         private readonly IColaboradorDocumentoRepository colaboradorDocumentoRepository;
+        private readonly UserManager<IdentityUser> userManager;
 
-        public ColaboradorController(IColaboradorRepository colaboradorRepository, IMapper mapper, IColaboradorDocumentoRepository colaboradorDocumentoRepository)
+        public ColaboradorController(IColaboradorRepository colaboradorRepository, IMapper mapper, IColaboradorDocumentoRepository colaboradorDocumentoRepository, UserManager<IdentityUser> userManager)
         {
             this.colaboradorRepository = colaboradorRepository;
             this.mapper = mapper;
             this.colaboradorDocumentoRepository = colaboradorDocumentoRepository;
+            this.userManager = userManager;
         }
 
         [HttpPost]
@@ -53,7 +58,7 @@ namespace enfermeria.api.Controllers.Admin
             try
             {
                 // Mapea el DTO a la entidad Paciente
-                var colaborador = mapper.Map<Colaborador>(dto);
+                var colaborador = mapper.Map<enfermeria.api.Models.Domain.Colaborador>(dto);
                 colaborador.UsuarioCreacionId = Guid.Parse(User.GetId());
 
                 List<RelEstadoColaborador> estadoColaboradors = new List<RelEstadoColaborador>();
@@ -299,6 +304,61 @@ namespace enfermeria.api.Controllers.Admin
             }
 
         }
+
+        [Authorize(Roles = "Administrador")]
+        [HttpPut("{id}/CrearCuenta")]
+        public async Task<IActionResult> CrearCuenta(Guid id)
+        {
+            var response = new ResponseModel_2<GetPacienteDto>();
+
+            try
+            {
+                var colaborador = await this.colaboradorRepository.GetByIdAsync(id);
+                if (colaborador == null)
+                    return NotFound("Colaborador no encontrado");
+
+                var usuarioExistente = await this.userManager.FindByEmailAsync(colaborador.CorreoElectronico);
+                if (usuarioExistente != null)
+                    return BadRequest("Ya existe una cuenta con este correo.");
+
+                var usuario = new IdentityUser
+                {
+                    UserName = colaborador.CorreoElectronico,
+                    Email = colaborador.CorreoElectronico,
+                    NormalizedEmail = colaborador.CorreoElectronico.ToUpper(),
+                    NormalizedUserName = colaborador.CorreoElectronico.ToUpper(),
+                };
+
+                var resultado = await this.userManager.CreateAsync(usuario, "password");
+
+                if (!resultado.Succeeded)
+                    return BadRequest(resultado.Errors);
+
+                await this.userManager.AddToRoleAsync(usuario, "Colaborador");
+
+                colaborador.UserId = usuario.Id;
+                colaborador.CuentaCreada = true;
+                colaborador.EstatusColaboradorId = (int)EstatusColaboradorEnum.Activo;
+
+                await this.colaboradorRepository.UpdateAsync(colaborador);
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                // Si ocurre una excepción, manejar el error
+                response.SetResponse(false, "Ocurrió un error al crear el paciente.");
+
+                // Puedes registrar el error o manejarlo como desees, por ejemplo:
+                // Log.Error(ex, "Error al crear paciente");
+
+                // Devolver una respuesta con el error
+                response.Data = ex.Message; // Puedes agregar más detalles del error si lo deseas
+                return StatusCode(500, response); // O devolver un BadRequest(400) si el error es de entrada
+            }
+
+        }
+        
 
     }
 }

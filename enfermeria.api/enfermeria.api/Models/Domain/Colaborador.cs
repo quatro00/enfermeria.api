@@ -7,6 +7,8 @@ public partial class Colaborador
 {
     public Guid Id { get; set; }
 
+    public string? UserId { get; set; }
+
     public int No { get; set; }
 
     public string Avatar { get; set; } = null!;
@@ -70,4 +72,6 @@ public partial class Colaborador
     public virtual ICollection<ServicioFechasOfertum> ServicioFechasOferta { get; set; } = new List<ServicioFechasOfertum>();
 
     public virtual CatTipoEnfermera TipoEnfermera { get; set; } = null!;
+
+    public virtual AspNetUser? User { get; set; }
 }

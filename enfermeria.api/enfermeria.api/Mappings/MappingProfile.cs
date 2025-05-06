@@ -10,6 +10,7 @@
     using enfermeria.api.Models.DTO.Contacto;
     using enfermeria.api.Models.DTO.EncuestaPlantilla;
     using enfermeria.api.Models.DTO.EncuestaPlantillaPregunta;
+    using enfermeria.api.Models.DTO.Mensaje;
     using enfermeria.api.Models.DTO.Paciente;
     using enfermeria.api.Models.DTO.Pago;
     using enfermeria.api.Models.DTO.Servicio;
@@ -21,6 +22,12 @@
     {
         public MappingProfile()
         {
+            CreateMap<CrearMensajeDto, Mensaje>()
+               .ForMember(dest => dest.FechaCreacion, opt => opt.MapFrom(src => DateTime.Now))
+               .ForMember(dest => dest.Mensaje1, opt => opt.MapFrom(src => src.Mensaje))
+               .ForMember(dest => dest.Activo, opt => opt.MapFrom(src => true))
+             ;
+
             CreateMap<Pago, GetDepositosDto>()
                .ForMember(dest => dest.PagoLoteId, opt => opt.MapFrom(src => src.PagoLoteId))
                .ForMember(dest => dest.ColaboradorId, opt => opt.MapFrom(src => src.ServicioFecha.ColaboradorAsignadoId))
