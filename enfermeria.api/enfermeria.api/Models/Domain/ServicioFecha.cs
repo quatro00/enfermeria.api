@@ -7,6 +7,8 @@ public partial class ServicioFecha
 {
     public Guid Id { get; set; }
 
+    public int No { get; set; }
+
     public Guid ServicioId { get; set; }
 
     public Guid? ColaboradorAsignadoId { get; set; }

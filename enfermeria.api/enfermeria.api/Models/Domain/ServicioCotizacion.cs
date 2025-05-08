@@ -7,6 +7,8 @@ public partial class ServicioCotizacion
 {
     public Guid Id { get; set; }
 
+    public int No { get; set; }
+
     public Guid ServicioFechasId { get; set; }
 
     public decimal Horas { get; set; }

@@ -7,6 +7,8 @@ public partial class ServicioFechasOfertum
 {
     public Guid Id { get; set; }
 
+    public int No { get; set; }
+
     public Guid ServicioFechaId { get; set; }
 
     public Guid ColaboradorId { get; set; }

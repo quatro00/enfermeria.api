@@ -581,6 +581,7 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
             entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
             entity.Property(e => e.Horario).HasMaxLength(50);
             entity.Property(e => e.Horas).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.No).ValueGeneratedOnAdd();
             entity.Property(e => e.PrecioFinal).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.PrecioHoraBase).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.PrecioHoraFinal).HasColumnType("decimal(18, 2)");
@@ -604,6 +605,7 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
             entity.Property(e => e.FechaTermino).HasColumnType("datetime");
             entity.Property(e => e.ImporteBruto).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.ImporteSolicitado).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.No).ValueGeneratedOnAdd();
             entity.Property(e => e.Retenciones).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.Total).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.UsuarioModificacion)
@@ -634,6 +636,7 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
             entity.Property(e => e.FechaCreacion).HasColumnType("datetime");
             entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
             entity.Property(e => e.MontoSolicitado).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.No).ValueGeneratedOnAdd();
             entity.Property(e => e.Observaciones).HasMaxLength(500);
 
             entity.HasOne(d => d.Colaborador).WithMany(p => p.ServicioFechasOferta)
