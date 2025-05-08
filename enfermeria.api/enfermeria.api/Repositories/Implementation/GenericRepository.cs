@@ -162,6 +162,18 @@ namespace enfermeria.api.Repositories.Implementation
         {
             return await _dbSet.AnyAsync(predicate);
         }
+
+        public async Task<int> UpdateWhereAsync(Expression<Func<T, bool>> predicate, Action<T> updateAction)
+        {
+            var items = await _context.Set<T>().Where(predicate).ToListAsync();
+
+            foreach (var item in items)
+            {
+                updateAction(item);
+            }
+
+            return await _context.SaveChangesAsync();
+        }
     }
 
 }

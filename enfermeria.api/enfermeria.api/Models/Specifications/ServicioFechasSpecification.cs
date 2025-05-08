@@ -23,6 +23,7 @@ namespace enfermeria.api.Models.Specifications
 
                 (filtro.EstadoId == null || p.Servicio.Municipio.EstadoId == filtro.EstadoId) &&
                 (filtro.MunicipioId == null || p.Servicio.MunicipioId == filtro.MunicipioId) &&
+                 (filtro.EstatusServicioId == null || p.Servicio.EstatusServicioId == filtro.EstatusServicioId) &&
 
 
                 (filtro.ColaboradorAsignadoId == null || p.ColaboradorAsignadoId == filtro.ColaboradorAsignadoId)

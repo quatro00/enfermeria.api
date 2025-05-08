@@ -67,6 +67,7 @@
                .ForMember(dest => dest.Observaciones, opt => opt.MapFrom(src => src.Servicio.Observaciones))
                .ForMember(dest => dest.Horas, opt => opt.MapFrom(src => src.CantidadHoras))
                .ForMember(dest => dest.Total, opt => opt.MapFrom(src => src.Total - src.Descuento - src.Retenciones - src.CostosOperativos - src.Comision))
+               .ForMember(dest => dest.Cotizado, opt => opt.MapFrom(src => src.ServicioFechasOferta.Count() > 0))
             ;
 
             CreateMap<CatEstado, EstadoDto>()

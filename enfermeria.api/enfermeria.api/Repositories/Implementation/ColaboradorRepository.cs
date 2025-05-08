@@ -16,5 +16,9 @@ namespace enfermeria.api.Repositories.Implementation
             _dbSet = _context.Set<Colaborador>();
         }
 
+        public async Task<Colaborador> GetByUserIdAsync(string userId)
+        {
+            return await _dbSet.Where(x=>x.UserId.ToUpper() == userId.ToUpper()).FirstOrDefaultAsync();
+        }
     }
 }

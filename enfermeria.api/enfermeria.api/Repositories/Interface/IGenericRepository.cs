@@ -26,5 +26,6 @@ namespace enfermeria.api.Repositories.Interface
             Expression<Func<T, TResult>> selector);
 
         Task<bool> AnyAsync(Expression<Func<T, bool>> predicate);
+        Task<int> UpdateWhereAsync(Expression<Func<T, bool>> predicate, Action<T> updateAction);
     }
 }
