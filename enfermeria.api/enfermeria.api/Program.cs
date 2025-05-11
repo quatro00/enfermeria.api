@@ -134,7 +134,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowSpecificOrigins", policy =>
     {
         policy.WithOrigins(
-            "http://localhost:8100",
+            "https://localhost:8100",
             "ionic://localhost",
             "capacitor://localhost",
             "https://quatro0-001-site2.ktempurl.com",
