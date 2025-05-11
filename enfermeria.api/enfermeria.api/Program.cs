@@ -140,6 +140,7 @@ builder.Services.AddCors(options =>
             "https://quatro0-001-site2.ktempurl.com",
             "https://quatro0-001-site3.ktempurl.com",
             "https://quatro0-001-site4.ktempurl.com",
+            "https://quatro0-001-site5.ktempurl.com", // <-- Agrega este
             "https://quatro0-001-site6.ktempurl.com",
             "http://quatro0-001-site6.ktempurl.com",
             "http://localhost:51293",
