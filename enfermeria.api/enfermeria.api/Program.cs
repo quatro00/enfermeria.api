@@ -94,6 +94,7 @@ builder.Services.AddScoped<IPagoLoteRepository, PagoLoteRepository>();
 builder.Services.AddScoped<IPagoRepository, PagoRepository>();
 builder.Services.AddScoped<IMunicipioRepository, MunicipioRepository>();
 builder.Services.AddScoped<IMensajeRepository, MensajeRepository>();
+builder.Services.AddScoped<IAvisoRepository, AvisoRepository>();
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
@@ -152,7 +153,7 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (
     app.Environment.IsDevelopment() 
-    || app.Environment.IsProduction()
+    //|| app.Environment.IsProduction()
     )
 {
 app.UseSwagger();

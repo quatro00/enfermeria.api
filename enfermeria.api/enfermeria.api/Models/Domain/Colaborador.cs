@@ -59,6 +59,8 @@ public partial class Colaborador
 
     public Guid? UsuarioModificacionId { get; set; }
 
+    public virtual ICollection<Aviso> Avisos { get; set; } = new List<Aviso>();
+
     public virtual CatBanco Banco { get; set; } = null!;
 
     public virtual ICollection<ColaboradorDocumento> ColaboradorDocumentos { get; set; } = new List<ColaboradorDocumento>();

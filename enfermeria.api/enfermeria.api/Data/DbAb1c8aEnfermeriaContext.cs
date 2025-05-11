@@ -30,6 +30,8 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
 
     public virtual DbSet<AspNetUserToken> AspNetUserTokens { get; set; }
 
+    public virtual DbSet<Aviso> Avisos { get; set; }
+
     public virtual DbSet<CatBanco> CatBancos { get; set; }
 
     public virtual DbSet<CatEstado> CatEstados { get; set; }
@@ -154,6 +156,22 @@ public partial class DbAb1c8aEnfermeriaContext : DbContext
             entity.HasKey(e => new { e.UserId, e.LoginProvider, e.Name });
 
             entity.HasOne(d => d.User).WithMany(p => p.AspNetUserTokens).HasForeignKey(d => d.UserId);
+        });
+
+        modelBuilder.Entity<Aviso>(entity =>
+        {
+            entity.Property(e => e.Id).HasDefaultValueSql("(newsequentialid())");
+            entity.Property(e => e.Color).HasMaxLength(50);
+            entity.Property(e => e.FechaCreacion).HasColumnType("datetime");
+            entity.Property(e => e.Icono).HasMaxLength(50);
+            entity.Property(e => e.Texto).HasMaxLength(250);
+            entity.Property(e => e.Titulo).HasMaxLength(250);
+            entity.Property(e => e.Url).HasMaxLength(250);
+            entity.Property(e => e.Vigencia).HasColumnType("datetime");
+
+            entity.HasOne(d => d.Colaborador).WithMany(p => p.Avisos)
+                .HasForeignKey(d => d.ColaboradorId)
+                .HasConstraintName("FK_Avisos_Colaborador");
         });
 
         modelBuilder.Entity<CatBanco>(entity =>

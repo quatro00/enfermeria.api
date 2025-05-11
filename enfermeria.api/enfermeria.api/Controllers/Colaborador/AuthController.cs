@@ -143,7 +143,7 @@ namespace enfermeria.api.Controllers.Colaborador
             // Ejemplo: https://tusitio.com/reset?email=...&token=...
 
             string resetLink = $"https://tusitio.com/reset?email={user.Email}&token={encodedToken}";
-            await emailService.SendEmailAsync_RecuperarPassword(resetLink);
+            await emailService.SendEmailAsync_RecuperarPassword(resetLink, model.Email);
             // En producción: envía el correo. En dev: puedes devolver el link
             return Ok(new { resetLink });
         }

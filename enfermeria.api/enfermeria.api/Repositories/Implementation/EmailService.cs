@@ -225,7 +225,7 @@ namespace enfermeria.api.Repositories.Implementation
             await smtp.SendMailAsync(message);
         }
 
-        public async Task SendEmailAsync_RecuperarPassword(string linkRecuperacion)
+        public async Task SendEmailAsync_RecuperarPassword(string linkRecuperacion, string correoElectronico)
         {
             string htmlBody = $@"
             <div style='font-family: Arial, sans-serif; background-color: #f5f5f5; padding: 30px;'>
@@ -277,7 +277,7 @@ namespace enfermeria.api.Repositories.Implementation
                 IsBodyHtml = true
             };
 
-            message.To.Add("josecarlosgarciadiaz@gmail.com");
+            message.To.Add(correoElectronico);
 
             using var smtp = new SmtpClient(_settings.Dominio)
             {
