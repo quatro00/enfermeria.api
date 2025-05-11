@@ -16,7 +16,7 @@ namespace enfermeria.api.Models.Specifications
                 (filtro.IncluirInactivos || p.Activo) &&
                 (filtro.FechaInicio == null || p.FechaCreacion >= filtro.FechaInicio) &&
                 (filtro.FechaFin == null || p.FechaCreacion <= filtro.FechaFin.Value.AddDays(1)) &&
-
+                (filtro.ColaboradorAsignadoId == null || p.Pagos.Any(x => x.ServicioFecha != null && x.ServicioFecha.ColaboradorAsignadoId == filtro.ColaboradorAsignadoId)) &&
 
 
                 (filtro.EstatusPagoLoteId == null || p.EstatosPagoLoteId == filtro.EstatusPagoLoteId);

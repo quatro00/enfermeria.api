@@ -9,5 +9,7 @@ namespace enfermeria.api.Repositories.Interface
         Task SendEmailAsync_Cuenta(EmailRequest request, string cuenta);
 
         Task SendEmailAsync_NuevoMensaje(Mensaje mensaje);
+
+        Task SendEmailAsync_RecuperarPassword(string linkRecuperacion);
     }
 }

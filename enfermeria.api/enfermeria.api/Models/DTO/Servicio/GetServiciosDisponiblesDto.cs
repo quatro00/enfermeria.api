@@ -5,7 +5,8 @@ namespace enfermeria.api.Models.DTO.Servicio
     public class GetServiciosDisponiblesDto
     {
         public Guid Id { get; set; }
-        public int No {  get; set; }
+        public int No { get; set; }
+        public int NoGuardia { get; set; }
         public string Motivo { get; set; }
         public string Direccion { get; set; }
         public string Ciudad { get; set; }

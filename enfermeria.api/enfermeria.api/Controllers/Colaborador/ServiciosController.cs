@@ -78,12 +78,62 @@ namespace enfermeria.api.Controllers.Colaborador
                 var pacientes = await this.servicioFechaRepository.ListAsync(spec);
                 foreach(var item in pacientes)
                 {
-                    item.ServicioFechasOferta = item.ServicioFechasOferta.Where(x=>x.ColaboradorId == colaborador.Id && x.Activo == true).ToList();
+                    item.ServicioFechasOferta = item.ServicioFechasOferta.Where(x=>x.ColaboradorId == colaborador.Id && x.Activo == true && x.EstatusOfertaId == 1).ToList();
                 }
 
                 var pacientesDto = mapper.Map<List<GetServiciosDisponiblesDto>>(pacientes);
 
                 return Ok(pacientesDto.OrderBy(x=>x.FechaInicio));
+            }
+            catch (Exception ex)
+            {
+                BadRequest("Ocurrio un error inesperado.");
+            }
+            return Ok();
+
+        }
+
+        [HttpGet("ver-servicios-proximos")]
+        [Authorize(Roles = "Colaborador")]
+        public async Task<IActionResult> GetServiciosProximos()
+        {
+            try
+            {
+                var userid = User.GetId();
+                var colaborador = await this.colaboradorRepository.GetByUserIdAsync(userid);
+
+                FiltroGlobal filtro = new FiltroGlobal()
+                {
+                    IncluirInactivos = false,
+                    FechaInicio = DateTime.Now,
+                    ColaboradorAsignadoId = colaborador.Id,
+                    EstatusServicioFechaId = 2,
+                    EstatusServicioId = 2 //SOLO LOS PAGADOS
+                };
+
+                var spec = new ServicioFechasSpecification(filtro);
+
+                spec.IncludeStrings = new List<string>
+                    {
+                         "Servicio",
+                        "Servicio.Municipio",
+                        "Servicio.Municipio.Estado",
+                        "Servicio.TipoEnfermera",
+                        "Servicio.TipoLugar",
+                        "ServicioFechasOferta"
+                    };
+
+                
+
+                var pacientes = await this.servicioFechaRepository.ListAsync(spec);
+                foreach (var item in pacientes)
+                {
+                    item.ServicioFechasOferta = item.ServicioFechasOferta.Where(x => x.ColaboradorId == colaborador.Id && x.Activo == true && x.EstatusOfertaId == 1).ToList();
+                }
+
+                var pacientesDto = mapper.Map<List<GetServiciosDisponiblesDto>>(pacientes);
+
+                return Ok(pacientesDto.OrderBy(x => x.FechaInicio));
             }
             catch (Exception ex)
             {
@@ -165,22 +215,6 @@ namespace enfermeria.api.Controllers.Colaborador
 
         }
        
-        [HttpGet("ver-servicios-proximos")]
-        [Authorize(Roles = "Colaborador")]
-        public async Task<IActionResult> GetServiciosProximos()
-        {
-            try
-            {
-                //this.colaboradorRepository.get
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                BadRequest("Ocurrio un error inesperado.");
-            }
-            return Ok();
-
-        }
 
         [HttpPost("eliminar-cotizacion")]
         [Authorize(Roles = "Colaborador")]

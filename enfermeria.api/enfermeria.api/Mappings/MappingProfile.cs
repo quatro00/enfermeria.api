@@ -4,6 +4,7 @@
     using enfermeria.api.Enums;
     using enfermeria.api.Helpers.Cotizacion;
     using enfermeria.api.Models.Domain;
+    using enfermeria.api.Models.DTO.Auth;
     using enfermeria.api.Models.DTO.Banco;
     using enfermeria.api.Models.DTO.CatMunicipio;
     using enfermeria.api.Models.DTO.Colaborador;
@@ -23,10 +24,43 @@
     {
         public MappingProfile()
         {
+            CreateMap<Colaborador, GetPerfilDto>()
+               .ForMember(dest => dest.Nombre, opt => opt.MapFrom(src => src.Nombre + " " + src.Apellidos))
+               .ForMember(dest => dest.Telefono, opt => opt.MapFrom(src => src.Telefono))
+               .ForMember(dest => dest.CorreoElectronico, opt => opt.MapFrom(src => src.CorreoElectronico))
+               .ForMember(dest => dest.Rfc, opt => opt.MapFrom(src => src.Rfc))
+               .ForMember(dest => dest.Curp, opt => opt.MapFrom(src => src.Curp))
+               .ForMember(dest => dest.CedulaProfesional, opt => opt.MapFrom(src => src.CedulaProfesional))
+               .ForMember(dest => dest.Domicilio, opt => opt.MapFrom(src => src.DomicilioCalle + " " + src.DomicilioNumero + ", " + src.Colonia))
+               .ForMember(dest => dest.Banco, opt => opt.MapFrom(src => src.Banco.Nombre))
+               .ForMember(dest => dest.Clabe, opt => opt.MapFrom(src => src.Clabe))
+               .ForMember(dest => dest.CuentaBancaria, opt => opt.MapFrom(src => src.Cuenta))
+               .ForMember(dest => dest.Estados, opt => opt.MapFrom(src => src.RelEstadoColaboradors.Select(e => e.Estado.Nombre).ToList()))
+               ;
+
+            CreateMap<PagoLote, GetPagosColaboradorDto>()
+               .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+               .ForMember(dest => dest.Folio, opt => opt.MapFrom(src => src.No))
+               .ForMember(dest => dest.Motivo, opt => opt.MapFrom(src => src.Etiqueta))
+               .ForMember(dest => dest.Fecha, opt => opt.MapFrom(src => src.FechaCreacion))
+               .ForMember(dest => dest.FechaInicio, opt => opt.MapFrom(src => src.FechaInicio))
+               .ForMember(dest => dest.FechaFin, opt => opt.MapFrom(src => src.FechaFin))
+               .ForMember(dest => dest.Estatus, opt => opt.MapFrom(src => src.EstatosPagoLote.Descripcion))
+               .ForMember(dest => dest.Total, opt => opt.MapFrom(src => src.Pagos.Sum(x=>x.Total)))
+               .ForMember(dest => dest.Detalle, opt => opt.MapFrom(src => src.Pagos))
+               ;
+
+            CreateMap<Pago, GetPagosColaboradorDetalleDto>()
+                .ForMember(dest => dest.CantidadHoras, opt => opt.MapFrom(src => src.ServicioFecha.CantidadHoras))
+                .ForMember(dest => dest.NoGuardia, opt => opt.MapFrom(src => src.ServicioFecha.No))
+                .ForMember(dest => dest.Fecha, opt => opt.MapFrom(src => src.ServicioFecha.FechaInicio))
+                ;
+
             CreateMap<ServicioFecha, GetServiciosDisponiblesDto>()
                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
                .ForMember(dest => dest.Motivo, opt => opt.MapFrom(src => src.Servicio.PrincipalRazon))
                .ForMember(dest => dest.No, opt => opt.MapFrom(src => src.Servicio.No))
+               .ForMember(dest => dest.NoGuardia, opt => opt.MapFrom(src => src.No))
                .ForMember(dest => dest.Direccion, opt => opt.MapFrom(src => src.Servicio.Direccion))
                .ForMember(dest => dest.Ciudad, opt => opt.MapFrom(src => src.Servicio.Municipio.NombreCorto))
                .ForMember(dest => dest.Estado, opt => opt.MapFrom(src => src.Servicio.Municipio.Estado.NombreCorto))

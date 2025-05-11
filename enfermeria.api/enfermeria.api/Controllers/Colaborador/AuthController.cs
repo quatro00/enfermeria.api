@@ -1,7 +1,12 @@
-﻿using enfermeria.api.Models.DTO.Auth;
+﻿using AutoMapper;
+using enfermeria.api.Helpers;
+using enfermeria.api.Models.Domain;
+using enfermeria.api.Models.DTO;
+using enfermeria.api.Models.DTO.Auth;
 using enfermeria.api.Models.DTO.Usuarios;
+using enfermeria.api.Repositories.Implementation;
 using enfermeria.api.Repositories.Interface;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,12 +19,18 @@ namespace enfermeria.api.Controllers.Colaborador
         private readonly UserManager<IdentityUser> userManager;
         private readonly ITokenRepository tokenRepository;
         private readonly IAspNetUsersRepository aspNetUsersRepository;
+        private readonly IColaboradorRepository colaboradorRepository;
+        private readonly IEmailService emailService;
+        private readonly IMapper mapper;
 
-        public AuthController(UserManager<IdentityUser> userManager, ITokenRepository tokenRepository, IAspNetUsersRepository aspNetUsersRepository)
+        public AuthController(UserManager<IdentityUser> userManager, ITokenRepository tokenRepository, IAspNetUsersRepository aspNetUsersRepository, IColaboradorRepository colaboradorRepository, IEmailService emailService, IMapper mapper)
         {
             this.userManager = userManager;
             this.tokenRepository = tokenRepository;
             this.aspNetUsersRepository = aspNetUsersRepository;
+            this.colaboradorRepository = colaboradorRepository;
+            this.emailService = emailService;
+            this.mapper = mapper;
         }
 
         [HttpPost]
@@ -68,6 +79,73 @@ namespace enfermeria.api.Controllers.Colaborador
 
             ModelState.AddModelError("error", "Email o password incorrecto.");
             return ValidationProblem(ModelState);
+        }
+
+        [HttpGet("ver-perfil")]
+        [Authorize(Roles = "Colaborador")]
+        public async Task<IActionResult> GetPerfil()
+        {
+            try
+            {
+                var userid = User.GetId();
+                var colaborador = await this.colaboradorRepository.GetByUserIdAsync(userid);
+
+                FiltroGlobal filtro = new FiltroGlobal()
+                {
+                   
+                };
+
+                var pacientes = await this.colaboradorRepository.GetByIdAsync(colaborador.Id, "Id", "Banco",
+                        "RelEstadoColaboradors",
+                        "RelEstadoColaboradors.Estado");
+                
+                var pacientesDto = mapper.Map<GetPerfilDto>(pacientes);
+
+                return Ok(pacientesDto);
+            }
+            catch (Exception ex)
+            {
+                BadRequest("Ocurrio un error inesperado.");
+            }
+            return Ok();
+
+        }
+
+        [HttpPost("confirmar-reset")]
+        public async Task<IActionResult> ConfirmarReset([FromBody] ResetPasswordDto model)
+        {
+            var user = await userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+                return BadRequest("Usuario no encontrado");
+
+            var decodedToken = System.Net.WebUtility.UrlDecode(model.Token);
+
+            var result = await userManager.ResetPasswordAsync(user, decodedToken, model.NewPassword);
+
+            if (!result.Succeeded)
+                return BadRequest(result.Errors);
+
+            return Ok("Contraseña actualizada correctamente");
+        }
+
+        [HttpPost("recuperar-contrasena")]
+        public async Task<IActionResult> RecuperarContrasena([FromBody] RecuperarContrasenaDto model)
+        {
+            var user = await userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+                return Ok(); // no revelar si el email existe
+
+            var token = await userManager.GeneratePasswordResetTokenAsync(user);
+
+            var encodedToken = System.Net.WebUtility.UrlEncode(token);
+
+            // Aquí puedes enviar un correo real con un enlace al frontend
+            // Ejemplo: https://tusitio.com/reset?email=...&token=...
+
+            string resetLink = $"https://tusitio.com/reset?email={user.Email}&token={encodedToken}";
+            await emailService.SendEmailAsync_RecuperarPassword(resetLink);
+            // En producción: envía el correo. En dev: puedes devolver el link
+            return Ok(new { resetLink });
         }
     }
 }

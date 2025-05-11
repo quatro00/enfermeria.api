@@ -224,5 +224,70 @@ namespace enfermeria.api.Repositories.Implementation
 
             await smtp.SendMailAsync(message);
         }
+
+        public async Task SendEmailAsync_RecuperarPassword(string linkRecuperacion)
+        {
+            string htmlBody = $@"
+            <div style='font-family: Arial, sans-serif; background-color: #f5f5f5; padding: 30px;'>
+              <div style='max-width: 600px; margin: auto; background-color: white; border-radius: 8px; padding: 30px; box-shadow: 0 0 10px rgba(0,0,0,0.05);'>
+
+                <h2 style='color: #2c3e50;'>Recuperación de contraseña</h2>
+
+                <p style='font-size: 16px; color: #333;'>
+                  Hola, has solicitado restablecer tu contraseña en el portal <strong style='color: #2980b9;'>{nombreNegocio}</strong>.
+                </p>
+
+                <p style='font-size: 16px; color: #333;'>
+                  Para continuar con el proceso, haz clic en el siguiente botón:
+                </p>
+
+                <p style='text-align: center; margin: 30px 0;'>
+                  <a href='{linkRecuperacion}' style='background-color: #2980b9; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: bold;'>
+                    Restablecer contraseña
+                  </a>
+                </p>
+
+                <p style='font-size: 14px; color: #555;'>
+                  Si tú no solicitaste esta recuperación, puedes ignorar este mensaje. Este enlace es válido por un tiempo limitado y solo puede ser usado una vez.
+                </p>
+
+                <hr style='margin: 30px 0; border: none; border-top: 1px solid #ddd;'>
+
+                <p style='font-size: 14px; color: #555;'>
+                  <strong>Enfermería AlfaCare</strong><br>
+                  Av. Salud 123, Colonia Bienestar, Monterrey, NL, México<br>
+                  Tel: <a href='tel:8180000000' style='color: #2980b9;'>(81) 8000-0000</a> | <a href='tel:8123456789' style='color: #2980b9;'>(81) 2345-6789</a><br>
+                  Correo: <a href='mailto:contacto@alfacare.com' style='color: #2980b9;'>contacto@alfacare.com</a><br>
+                  Sitio web: <a href='https://www.alfacare.com' style='color: #2980b9;'>www.alfacare.com</a>
+                </p>
+
+                <p style='font-size: 13px; color: #aaa; text-align: center; margin-top: 40px;'>
+                  © 2025 Enfermería AlfaCare. Todos los derechos reservados.
+                </p>
+              </div>
+            </div>
+
+";
+
+            using var message = new MailMessage
+            {
+                From = new MailAddress(_settings.Usuario),
+                Subject = "Recuperacion de contraseña",
+                Body = htmlBody,
+                IsBodyHtml = true
+            };
+
+            message.To.Add("josecarlosgarciadiaz@gmail.com");
+
+            using var smtp = new SmtpClient(_settings.Dominio)
+            {
+                Port = _settings.Puerto,
+                Credentials = new NetworkCredential(_settings.Usuario, _settings.Contrasena),
+                EnableSsl = _settings.EnableSsl
+            };
+
+            await smtp.SendMailAsync(message);
+        }
+
     }
 }
