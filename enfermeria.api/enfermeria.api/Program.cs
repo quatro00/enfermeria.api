@@ -146,8 +146,8 @@ builder.Services.AddCors(options =>
             "http://quatro0-001-site6.ktempurl.com",
             "http://localhost:51293",
             "http://localhost:8100",
-            "http://admin.enfermeriamc.com/",
-            "https://admin.enfermeriamc.com/",
+            "http://admin.enfermeriamc.com",
+            "https://admin.enfermeriamc.com",
             "http://localhost:4200") // Origen permitido
               .AllowAnyHeader() // Permitir cualquier encabezado
               .AllowAnyMethod(); // Permitir cualquier método HTTP
